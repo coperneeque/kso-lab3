@@ -6,14 +6,17 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "lifo_small.h"
 #include "simple_test.h"
 #include "test_flags.h"
 
+
+extern int errno;
+
 void initLifoSmall(Lifo_small_t *l)
 {
-    extern int errno;
     errno = 0;
 
     if (l == NULL)
@@ -33,7 +36,6 @@ void initLifoSmall(Lifo_small_t *l)
 
 void putLifoSmall(Lifo_small_t *l, int k)
 {
-    extern int errno;
     errno = 0;
 
     if (l == NULL)
@@ -64,7 +66,6 @@ void putLifoSmall(Lifo_small_t *l, int k)
 
 int popLifoSmall(Lifo_small_t* l)
 {
-    extern int errno;
     errno = 0;
 
     if (l == NULL)
@@ -93,4 +94,50 @@ int popLifoSmall(Lifo_small_t* l)
 #endif
 
     return ret;
+}
+
+void flushLifoSmall(Lifo_small_t *l)
+{
+    errno = 0;
+
+    if (l == NULL)
+    {
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("flushLifoSmall(): null pointer");
+#endif
+        return;
+    }
+
+    l->size     = 0;
+    l->head_idx = 0;
+}
+
+void randFillLifoSmall(Lifo_small_t* l)
+{
+#define LOWER 30
+#define UPPER 70
+#define RANGE 100
+        
+    errno = 0;
+
+    if (l == NULL)
+    {
+        errno = EINVAL;
+            #ifdef MP_DEBUG
+        perror("randFillLifoSmall(): null pointer");
+            #endif
+        return;
+    }
+
+    flushLifoSmall(l);
+
+    srandom(time(NULL));
+    unsigned percentage = LOWER + random() % (UPPER - LOWER);
+    double bound = (double)percentage / 100 * l->capacity;
+
+    for (size_t i = 0; i < (size_t)bound; i++)
+    {
+        putLifoSmall(l, random() % RANGE);
+    }
 }

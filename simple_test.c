@@ -5,6 +5,7 @@
  ************************************************************************/
 #include "simple_test.h"
 
+#include <errno.h>
 #include <stdio.h>
 
 #include "fifo_big.h"
@@ -12,108 +13,145 @@
 #include "lifo_small.h"
 
 
-void test_FifoBig()
+extern int errno;
+
+void test_FifoBig(Fifo_big_t* fifo)
 {
-    Fifo_big_t fifo;
-    initFifoBig(&fifo);
-    
-    for (size_t i = 0; i < 10; i++)
+    errno = 0;
+
+    if (fifo == NULL)
     {
-        putFifoBig(&fifo, 21 + i);
-    }
-    
-    for (size_t i = 0; i < 10; i++)
-    {
-        popFifoBig(&fifo);
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("test_FifoBig(): NULL pointer");
+#endif
+        return;
     }
 
-    popFifoBig(&fifo);
-    popFifoBig(&fifo);
+    initFifoBig(fifo);
+    
+    for (size_t i = 0; i < 10; i++)
+    {
+        putFifoBig(fifo, 21 + i);
+    }
+    
+    for (size_t i = 0; i < 10; i++)
+    {
+        popFifoBig(fifo);
+    }
+
+    popFifoBig(fifo);
+    popFifoBig(fifo);
 
     for (size_t i = 0; i < 5; i++)
     {
-        putFifoBig(&fifo, 21 + i);
+        putFifoBig(fifo, 21 + i);
     }
 
     for (size_t i = 0; i < 6; i++)
     {
-        popFifoBig(&fifo);
+        popFifoBig(fifo);
     }
 
-    printf("[  FifoBig  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo.head_idx, fifo.tail_idx, fifo.capacity, fifo.size);
+    printf("[  FifoBig  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo->head_idx, fifo->tail_idx, fifo->capacity, fifo->size);
     
     for (size_t i = 0; i < 5; i++)
     {
-        putFifoBig(&fifo, 21 + i);
+        putFifoBig(fifo, 21 + i);
     }
 
     for (size_t i = 0; i < 6; i++)
     {
-        popFifoBig(&fifo);
+        popFifoBig(fifo);
     }
 
-    printf("[  FifoBig  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo.head_idx, fifo.tail_idx, fifo.capacity, fifo.size);
+    printf("[  FifoBig  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo->head_idx, fifo->tail_idx, fifo->capacity, fifo->size);
+
+    flushFifoBig(fifo);
 }
 
-void test_FifoMed()
+void test_FifoMed(Fifo_med_t* fifo)
 {
-    Fifo_med_t fifo;
-    initFifoMed(&fifo);
-    
-    for (size_t i = 0; i < 10; i++)
+    errno = 0;
+
+    if (fifo == NULL)
     {
-        putFifoMed(&fifo, 21 + i);
-    }
-    
-    for (size_t i = 0; i < 10; i++)
-    {
-        popFifoMed(&fifo);
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("test_FifoMed(): NULL pointer");
+#endif
+        return;
     }
 
-    popFifoMed(&fifo);
-    popFifoMed(&fifo);
+    initFifoMed(fifo);
+    
+    for (size_t i = 0; i < 10; i++)
+    {
+        putFifoMed(fifo, 21 + i);
+    }
+    
+    for (size_t i = 0; i < 10; i++)
+    {
+        popFifoMed(fifo);
+    }
+
+    popFifoMed(fifo);
+    popFifoMed(fifo);
 
     for (size_t i = 0; i < 5; i++)
     {
-        putFifoMed(&fifo, 21 + i);
+        putFifoMed(fifo, 21 + i);
     }
 
     for (size_t i = 0; i < 6; i++)
     {
-        popFifoMed(&fifo);
+        popFifoMed(fifo);
     }
 
-    printf("[  FifoMed  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo.head_idx, fifo.tail_idx, fifo.capacity, fifo.size);
+    printf("[  FifoMed  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo->head_idx, fifo->tail_idx, fifo->capacity, fifo->size);
     
     for (size_t i = 0; i < 5; i++)
     {
-        putFifoMed(&fifo, 21 + i);
+        putFifoMed(fifo, 21 + i);
     }
 
     for (size_t i = 0; i < 6; i++)
     {
-        popFifoMed(&fifo);
+        popFifoMed(fifo);
     }
 
-    printf("[  FifoMed  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo.head_idx, fifo.tail_idx, fifo.capacity, fifo.size);
+    printf("[  FifoMed  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo->head_idx, fifo->tail_idx, fifo->capacity, fifo->size);
 
+    // flushFifoMed();
 }
 
-void test_LifoSmall()
+void test_LifoSmall(Lifo_small_t *lifo)
 {
-    Lifo_small_t lifo;
-    initLifoSmall(&lifo);
+    // extern int errno;
+    errno = 0;
+
+    if (lifo == NULL)
+    {
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("test_LifoSmall(): NULL pointer");
+#endif
+        return;
+    }
+    
+    initLifoSmall(lifo);
 
     for (size_t i = 0; i < 35; i++)
     {
-        putLifoSmall(&lifo, 21 + i);
+        putLifoSmall(lifo, 21 + i);
     }
 
     for (size_t i = 0; i < 46; i++)
     {
-        popLifoSmall(&lifo);
+        popLifoSmall(lifo);
     }
-
     
-    printf("[ LifoSmall ]   head_idx: %u, capacity: %u, size: %u\n", lifo.head_idx, lifo.capacity, lifo.size);
+    printf("[ LifoSmall ]   head_idx: %u, capacity: %u, size: %u\n", lifo->head_idx, lifo->capacity, lifo->size);
+
+    // flushLifoSmall();
 }

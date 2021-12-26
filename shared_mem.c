@@ -6,14 +6,14 @@
 #include "fifo_big.h"
 #include "test_flags.h"
 
-int getBigBlock(char* path, int proj_id)
+int getMemBlock(char* path, int proj_id, size_t size)
 {
     key_t blockKey = ftok(path, proj_id);
 
     if (blockKey == -1)
     {
             #ifdef MP_DEBUG
-        perror("attachBigBlock(): ftok() failed on mem.txt");s
+        perror("getMemBlock(): ftok() failed on mem.txt");s
             #endif
         return -1;
     }
@@ -22,7 +22,7 @@ int getBigBlock(char* path, int proj_id)
     if (blockId == -1)
     {
         #ifdef MP_DEBUG
-        perror("attachBigBlock(): shmget() failed");
+        perror("getMemBlock(): shmget() failed");
         #endif
         return -1;
     }
@@ -30,15 +30,15 @@ int getBigBlock(char* path, int proj_id)
     return blockId;
 }
 
-Fifo_big_t* attachBigBlock(int block_id)
+void* attachMemBlock(int block_id)
 {
-    Fifo_big_t* ret = (void*)0;
+    void* ret = (void*)0;
 
     ret = shmat(block_id, (void*)0, 0);
         #ifdef MP_DEBUG
     if (ret == (void*)0)
     {
-        perror("attachBigBlock(): shmat() failed");
+        perror("attachMemBlock(): shmat() failed");
     }
         #endif
 

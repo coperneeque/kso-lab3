@@ -6,14 +6,17 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "fifo_med.h"
 #include "simple_test.h"
 #include "test_flags.h"
 
+
+extern int errno;
+
 void initFifoMed(Fifo_med_t *f)
 {
-    extern int errno;
     errno = 0;
 
     if (f == NULL)
@@ -34,7 +37,6 @@ void initFifoMed(Fifo_med_t *f)
 
 void putFifoMed(Fifo_med_t *f, int k)
 {
-    extern int errno;
     errno = 0;
 
     if (f == NULL)
@@ -75,7 +77,6 @@ void putFifoMed(Fifo_med_t *f, int k)
 
 int popFifoMed(Fifo_med_t* f)
 {
-    extern int errno;
     errno = 0;
 
     if(f == NULL)
@@ -116,5 +117,49 @@ int popFifoMed(Fifo_med_t* f)
     return ret;
 }
 
-// ================   DEBUG   ================
-//#undef MP_DEBUG
+void flushFifoMed(Fifo_med_t *f)
+{
+    errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("flushFifoMed(): null pointer");
+#endif
+        return;
+    }
+
+    f->size     = 0;
+    f->head_idx = 0;
+    f->tail_idx = 0;
+}
+
+void randFillFifoMed(Fifo_med_t* f)
+{
+#define LOWER 30
+#define UPPER 70
+#define RANGE 100
+        
+    errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+            #ifdef MP_DEBUG
+        perror("randFillFifoMed(): null pointer");
+            #endif
+        return;
+    }
+
+    flushFifoMed(f);
+
+    srandom(time(NULL));
+    unsigned percentage = LOWER + random() % (UPPER - LOWER);
+    double bound = (double)percentage / 100 * f->capacity;
+
+    for (size_t i = 0; i < (size_t)bound; i++)
+    {
+        putFifoMed(f, random() % RANGE);
+    }
+}

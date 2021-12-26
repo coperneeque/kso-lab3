@@ -19,8 +19,23 @@ typedef struct
     unsigned chunk;
 } Fifo_big_t;
 
-void initFifoBig();
+/*
+ * Set initial values
+ */
+void initFifoBig(Fifo_big_t*);
+
 void putFifoBig(Fifo_big_t*, int);
 int popFifoBig(Fifo_big_t*);
+
+/*
+ * Empty the Fifo by resetting head and tail
+ */
+void flushFifoBig(Fifo_big_t*);
+
+/*
+ * Populate a random precentage between 30% and 70%
+ * with random values
+ */
+void randFillFifoBig(Fifo_big_t*);
 
 #endif

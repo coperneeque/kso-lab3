@@ -6,14 +6,17 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "fifo_big.h"
 #include "simple_test.h"
 #include "test_flags.h"
 
+
+extern int errno;
+
 void initFifoBig(Fifo_big_t *f)
 {
-    extern int errno;
     errno = 0;
 
     if (f == NULL)
@@ -34,7 +37,6 @@ void initFifoBig(Fifo_big_t *f)
 
 void putFifoBig(Fifo_big_t *f, int k)
 {
-    extern int errno;
     errno = 0;
 
     if (f == NULL)
@@ -76,7 +78,6 @@ void putFifoBig(Fifo_big_t *f, int k)
 
 int popFifoBig(Fifo_big_t* f)
 {
-    extern int errno;
     errno = 0;
 
     if(f == NULL) 
@@ -114,4 +115,51 @@ int popFifoBig(Fifo_big_t* f)
     printf("popFifoBig(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
 #endif
     return ret;
+}
+
+void flushFifoBig(Fifo_big_t *f)
+{
+    errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+#ifdef MP_DEBUG
+        perror("initFifoBig(): null pointer");
+#endif
+        return;
+    }
+
+    f->size     = 0;
+    f->head_idx = 0;
+    f->tail_idx = 0;
+}
+
+void randFillFifoBig(Fifo_big_t* f)
+{
+#define LOWER 30
+#define UPPER 70
+#define RANGE 100
+        
+    errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+            #ifdef MP_DEBUG
+        perror("randFillFifoBig(): null pointer");
+            #endif
+        return;
+    }
+
+    flushFifoBig(f);
+
+    srandom(time(NULL));
+    unsigned percentage = LOWER + random() % (UPPER - LOWER);
+    double bound = (double)percentage / 100 * f->capacity;
+
+    for (size_t i = 0; i < (size_t)bound; i++)
+    {
+        putFifoBig(f, random() % RANGE);
+    }
 }

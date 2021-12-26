@@ -18,8 +18,22 @@ typedef struct
     unsigned chunk;
 } Lifo_small_t;
 
+/*
+ * Set initial values
+ */
 void initLifoSmall();
+
 void putLifoSmall(Lifo_small_t*, int);
 int popLifoSmall(Lifo_small_t*);
 
+/*
+ * Empty the Lifo by resetting head
+ */
+void flushLifoSmall(Lifo_small_t*);
+
+/*
+ * Populate a random precentage between 30% and 70%
+ * with random values
+ */
+void randFillLifoSmall(Lifo_small_t*);
 #endif
