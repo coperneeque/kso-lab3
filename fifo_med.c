@@ -59,7 +59,7 @@ void putFifoMed(Fifo_med_t *f, int k)
 
     if (f->size == 0)
     {
-        f->arr[f->head_idx] = k;
+        f->data[f->head_idx] = k;
         ++(f->size);
 #ifdef MP_DEBUG
         printf("putFifoMed(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
@@ -68,7 +68,7 @@ void putFifoMed(Fifo_med_t *f, int k)
     }
         
     f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 60
-    f->arr[f->head_idx] = k;
+    f->data[f->head_idx] = k;
     ++(f->size);
 #ifdef MP_DEBUG
     printf("putFifoMed(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
@@ -99,7 +99,7 @@ int popFifoMed(Fifo_med_t* f)
 
     if (f->size == 1)
     {
-        int ret = f->arr[f->tail_idx];
+        int ret = f->data[f->tail_idx];
         --f->size;
 #ifdef MP_DEBUG
         printf("popFifoMed(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
@@ -107,7 +107,7 @@ int popFifoMed(Fifo_med_t* f)
         return ret;
     }
     
-    int ret = f->arr[f->tail_idx];
+    int ret = f->data[f->tail_idx];
     f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 60
     --f->size;
 #ifdef MP_DEBUG

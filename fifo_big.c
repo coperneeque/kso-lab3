@@ -59,7 +59,7 @@ void putFifoBig(Fifo_big_t *f, int k)
 
     if (f->size == 0)
     {
-        f->arr[f->head_idx] = k;
+        f->data[f->head_idx] = k;
         ++(f->size);
 #ifdef MP_DEBUG
         printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
@@ -69,7 +69,7 @@ void putFifoBig(Fifo_big_t *f, int k)
 
     // size > 0    
     f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
-    f->arr[f->head_idx] = k;
+    f->data[f->head_idx] = k;
     ++(f->size);
 #ifdef MP_DEBUG
     printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
@@ -101,14 +101,14 @@ int popFifoBig(Fifo_big_t* f)
     if (f->size == 1)
     {
         --f->size;
-        int ret = f->arr[f->tail_idx];
+        int ret = f->data[f->tail_idx];
 #ifdef MP_DEBUG
         printf("popFifoBig(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
 #endif
         return ret;
     }
     
-    int ret = f->arr[f->tail_idx];
+    int ret = f->data[f->tail_idx];
     f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
     --f->size;
 #ifdef MP_DEBUG

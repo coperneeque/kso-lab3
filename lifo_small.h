@@ -11,7 +11,7 @@
 
 typedef struct
 {
-    int arr[LIFO_SMALL_CAPACITY];
+    int data[LIFO_SMALL_CAPACITY];
     unsigned head_idx;
     unsigned capacity;
     unsigned size;

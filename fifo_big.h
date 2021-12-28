@@ -11,7 +11,7 @@
 
 typedef struct
 {
-    int arr[FIFO_BIG_CAPACITY];
+    int data[FIFO_BIG_CAPACITY];
     unsigned head_idx;
     unsigned tail_idx;
     unsigned capacity;

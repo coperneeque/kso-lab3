@@ -56,7 +56,7 @@ void putLifoSmall(Lifo_small_t *l, int k)
         return;
     }
 
-    l->arr[l->head_idx] = k;
+    l->data[l->head_idx] = k;
     ++l->head_idx;
     ++(l->size);
 #ifdef MP_DEBUG
@@ -87,7 +87,7 @@ int popLifoSmall(Lifo_small_t* l)
     }
 
     --l->head_idx;
-    int ret = l->arr[l->head_idx];
+    int ret = l->data[l->head_idx];
     --l->size;
 #ifdef MP_DEBUG
     printf("popLifoSmall(): head_idx: %u, ret: %d, size: %u\n", l->head_idx, ret, l->size);

@@ -20,39 +20,23 @@
 
 #define SHMEM_FILE ("mem.txt")
 
+Fifo_big_t *getBigBuffer(int id);
+Fifo_med_t *getMedBuffer(int id);
+Lifo_small_t *getSmallBuffer(int id);
+
 int main(int argc, char **argv)
 {
 // create big buffer
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
-    Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
-#ifdef TEST_FIFO_BIG
-    test_FifoBig(bigBuffer);
-#endif
-#ifndef TEST_FIFO_BIG
-    initFifoBig(bigBuffer);
-#endif
-    // printf("bigBuffer before fork(): capacity: %u, size: %u\n", bigBuffer->capacity, bigBuffer->size);
+    Fifo_big_t *bigBuffer = getBigBuffer(bigBlockId);
 
 // create medium buffer
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
-    Fifo_med_t *medBuffer = attachMemBlock(medBlockId);
-#ifdef TEST_FIFO_MED
-    test_FifoMed();
-#endif
-#ifndef TEST_FIFO_MED
-    initFifoMed(medBuffer);
-#endif
-    // printf("medBuffer before fork(): capacity: %u, size: %u\n", medBuffer->capacity, medBuffer->size);
+    Fifo_med_t *medBuffer = getMedBuffer(medBlockId);
 
 // create small buffer
     int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
-    Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
-#ifdef TEST_LIFO_SMALL
-    test_LifoSmall();
-#endif
-#ifndef TEST_LIFO_SMALL
-    initLifoSmall(smallBuffer);
-#endif
+    Lifo_small_t *smallBuffer = getSmallBuffer(smallBlockId);
 
     pid_t parentpid = getpid();
 
@@ -81,4 +65,43 @@ int main(int argc, char **argv)
     }
     
     return 0;
+}
+
+Fifo_big_t *getBigBuffer(int id)
+{
+    Fifo_big_t *buf = attachMemBlock(id);
+#ifdef TEST_FIFO_BIG
+    test_FifoBig(buf);
+#endif
+#ifndef TEST_FIFO_BIG
+    initFifoBig(buf);
+#endif
+    // printf("bigBuffer before fork(): capacity: %u, size: %u\n", bigBuffer->capacity, bigBuffer->size);
+
+    return buf;
+}
+
+Fifo_med_t *getMedBuffer(int id)
+{
+    Fifo_med_t *buf = attachMemBlock(id);
+#ifdef TEST_FIFO_MED
+    test_FifoMed(buf);
+#endif
+#ifndef TEST_FIFO_MED
+    initFifoMed(buf);
+#endif
+    // printf("medBuffer before fork(): capacity: %u, size: %u\n", medBuffer->capacity, medBuffer->size);
+    return buf;
+}
+
+Lifo_small_t *getSmallBuffer(int id)
+{
+    Lifo_small_t *buf = attachMemBlock(id);
+#ifdef TEST_LIFO_SMALL
+    test_LifoSmall(buf);
+#endif
+#ifndef TEST_LIFO_SMALL
+    initLifoSmall(buf);
+#endif
+    return buf;
 }
