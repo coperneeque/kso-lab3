@@ -11,11 +11,14 @@
 
 typedef struct
 {
-    int data[LIFO_SMALL_CAPACITY];
-    unsigned head_idx;
-    unsigned capacity;
-    unsigned size;
-    unsigned chunk;
+    sem_t       mutex;
+    sem_t       semFull;
+    sem_t       semEmpty;
+    int         data[LIFO_SMALL_CAPACITY];
+    unsigned    head_idx;
+    unsigned    capacity;
+    unsigned    size;
+    unsigned    chunk;
 } Lifo_small_t;
 
 /*

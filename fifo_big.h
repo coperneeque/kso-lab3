@@ -6,17 +6,22 @@
 #ifndef FIFO_BIG_H
 #define FIFO_BIG_H
 
+#include <semaphore.h>
+
 #define FIFO_BIG_CAPACITY 100
 #define FIFO_BIG_CHUNK 3
 
 typedef struct
 {
-    int data[FIFO_BIG_CAPACITY];
-    unsigned head_idx;
-    unsigned tail_idx;
-    unsigned capacity;
-    unsigned size;
-    unsigned chunk;
+    sem_t       mutex;
+    sem_t       semFull;
+    sem_t       semEmpty;
+    int         data[FIFO_BIG_CAPACITY];
+    unsigned    head_idx;
+    unsigned    tail_idx;
+    unsigned    capacity;
+    unsigned    size;
+    unsigned    chunk;
 } Fifo_big_t;
 
 /*

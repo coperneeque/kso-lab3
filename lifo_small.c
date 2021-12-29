@@ -5,6 +5,7 @@
  ************************************************************************/
 #include <stdio.h>
 #include <errno.h>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -32,6 +33,9 @@ void initLifoSmall(Lifo_small_t *l)
     l->size     = 0;
     l->head_idx = 0;
     l->chunk    = LIFO_SMALL_CHUNK;
+    sem_init(&l->mutex, 1, 1);
+    sem_init(&l->semEmpty, 1, LIFO_SMALL_CAPACITY);
+    sem_init(&l->semFull, 1, 0);
 }
 
 void putLifoSmall(Lifo_small_t *l, int k)

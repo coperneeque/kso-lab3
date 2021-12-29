@@ -41,7 +41,10 @@ int main(int argc, char **argv)
     pid_t parentpid = getpid();
 
     if (fork() == 0) {  // this is child process:
-        // printf("fork(), child pid: %u\n", getpid());
+        printf("fork(), child pid: %u\n", getpid());
+        printf("waiting on sem... ");
+        sem_wait(&bigBuffer->mutex);
+        printf("done\n");
     }
     else {  // parent process:
         // printf("parent pid: %u\n", getpid());
@@ -50,7 +53,10 @@ int main(int argc, char **argv)
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {
-            // printf("spawned child with pid: %u\n", getpid());
+            printf("spawned child with pid: %u\n", getpid());
+            printf("waiting on sem... ");
+            sem_wait(&smallBuffer->semEmpty);
+            printf("done\n");
         }
     }
 

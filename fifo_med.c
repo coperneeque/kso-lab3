@@ -5,6 +5,7 @@
  ************************************************************************/
 #include <stdio.h>
 #include <errno.h>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -33,6 +34,9 @@ void initFifoMed(Fifo_med_t *f)
     f->head_idx = 0;
     f->tail_idx = 0;
     f->chunk    = FIFO_MED_CHUNK;
+    sem_init(&f->mutex, 1, 1);
+    sem_init(&f->semEmpty, 1, FIFO_MED_CAPACITY);
+    sem_init(&f->semFull, 1, 0);
 }
 
 void putFifoMed(Fifo_med_t *f, int k)

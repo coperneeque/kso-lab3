@@ -11,12 +11,15 @@
 
 typedef struct
 {
-    int data[FIFO_MED_CAPACITY];
-    unsigned head_idx;
-    unsigned tail_idx;
-    unsigned capacity;
-    unsigned size;
-    unsigned chunk;
+    sem_t       mutex;
+    sem_t       semFull;
+    sem_t       semEmpty;
+    int         data[FIFO_MED_CAPACITY];
+    unsigned    head_idx;
+    unsigned    tail_idx;
+    unsigned    capacity;
+    unsigned    size;
+    unsigned    chunk;
 } Fifo_med_t;
 
 /*
