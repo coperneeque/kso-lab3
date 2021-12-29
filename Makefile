@@ -4,7 +4,7 @@ LDFLAGS = -lrt -lpthread
 
 all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o consumer.o
 	gcc $(LDFLAGS) main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o -o main
-	gcc $(LDFLAGS) consumer.o -o consumer
+	gcc $(LDFLAGS) consumer.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o -o consumer
 
 main.o: main.c test_flags.h simple_test.h
 	gcc $(CFLAGS) main.c -o main.o
@@ -21,7 +21,7 @@ lifo_small.o: lifo_small.h lifo_small.c simple_test.h test_flags.h
 shared_mem.o: shared_mem.h shared_mem.c
 	gcc $(CFLAGS) shared_mem.c -o shared_mem.o
 
-consumer.o: consumer.h consumer.c
+consumer.o: consumer.h consumer.c 
 	gcc $(CFLAGS) consumer.c -o consumer.o
 
 simple_test.o: simple_test.h simple_test.c fifo_big.h fifo_med.h lifo_small.h

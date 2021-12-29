@@ -18,7 +18,6 @@
 #include "simple_test.h"
 #include "test_flags.h"
 
-#define SHMEM_FILE ("mem.txt")
 
 Fifo_big_t *getBigBuffer(int id);
 Fifo_med_t *getMedBuffer(int id);
@@ -29,6 +28,7 @@ int main(int argc, char **argv)
 // create big buffer
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = getBigBuffer(bigBlockId);
+    randFillFifoBig(bigBuffer);
 
 // create medium buffer
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
@@ -42,9 +42,8 @@ int main(int argc, char **argv)
 
     if (fork() == 0) {  // this is child process:
         printf("fork(), child pid: %u\n", getpid());
-        printf("waiting on sem... ");
-        sem_wait(&bigBuffer->mutex);
-        printf("done\n");
+        printf("executing consumer process...");
+        execv("./consumer", NULL);
     }
     else {  // parent process:
         // printf("parent pid: %u\n", getpid());
@@ -61,6 +60,8 @@ int main(int argc, char **argv)
     }
 
     if (getpid() == parentpid) {  // 2 children spawned, parent exits
+        sleep(1);
+        printFifoBig(bigBuffer);
         // printf("parent exiting\n");
         shmctl(bigBlockId, IPC_RMID, NULL);
         shmctl(medBlockId, IPC_RMID, NULL);
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
         // printf("child pid: %u exiting\n", getpid());
     }
     
+    sleep(1);
+
     return 0;
 }
 

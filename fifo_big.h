@@ -31,6 +31,7 @@ void initFifoBig(Fifo_big_t*);
 
 void putFifoBig(Fifo_big_t*, int);
 int popFifoBig(Fifo_big_t*);
+void printFifoBig(Fifo_big_t*);
 
 /*
  * Empty the Fifo by resetting head and tail

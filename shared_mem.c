@@ -1,3 +1,8 @@
+/************************************************************************
+ * Mikolaj Panka                                                        *
+ * KSO 2021                                                             *
+ * lab3                                                                 *
+ ************************************************************************/
 #include "shared_mem.h"
 
 // #include <stdlib.h>
@@ -21,9 +26,9 @@ int getMemBlock(char* path, int proj_id, size_t size)
     int blockId = shmget(blockKey, sizeof(Fifo_big_t), 0644 | IPC_CREAT);
     if (blockId == -1)
     {
-        #ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("getMemBlock(): shmget() failed");
-        #endif
+            #endif
         return -1;
     }
 

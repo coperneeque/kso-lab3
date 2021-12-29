@@ -121,6 +121,11 @@ int popFifoBig(Fifo_big_t* f)
     return ret;
 }
 
+void printFifoBig(Fifo_big_t* f)
+{
+    printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %u, head_idx: %u, chunk: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, f->chunk);
+}
+
 void flushFifoBig(Fifo_big_t *f)
 {
     errno = 0;
@@ -137,6 +142,8 @@ void flushFifoBig(Fifo_big_t *f)
     f->size     = 0;
     f->head_idx = 0;
     f->tail_idx = 0;
+    sem_init(&f->semEmpty, 1, FIFO_BIG_CAPACITY);
+    sem_init(&f->semFull, 1, 0);
 }
 
 void randFillFifoBig(Fifo_big_t* f)
@@ -166,4 +173,6 @@ void randFillFifoBig(Fifo_big_t* f)
     {
         putFifoBig(f, random() % RANGE);
     }
+    sem_init(&f->semEmpty, 1, FIFO_BIG_CAPACITY - (unsigned)bound);
+    sem_init(&f->semFull, 1, (unsigned)bound);
 }
