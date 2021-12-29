@@ -46,14 +46,15 @@ int main(int argc, char **argv)
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producer\", NULL)\n", getpid());
             // printf("spawned child with pid: %u\n", getpid());
             // printf("executing producer process...");
             // sleep(1);
-            // execv("./producer", NULL);
+            execv("./producer", NULL);
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {
-            printf("Child:\t\tParent spawned child with pid: %u\n", getpid());
+            // printf("Child:\t\tParent spawned child with pid: %u\n", getpid());
             // printf("waiting on sem... ");
             // sem_wait(&smallBuffer->semEmpty);
             // printf("done\n");

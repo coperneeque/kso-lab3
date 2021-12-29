@@ -22,7 +22,7 @@ lifo_small.o: lifo_small.h lifo_small.c simple_test.h test_flags.h
 shared_mem.o: shared_mem.h shared_mem.c
 	gcc $(CFLAGS) shared_mem.c -o shared_mem.o
 
-consumer.o: consumer.h consumer.c 
+consumer.o: consumer.c 
 	gcc $(CFLAGS) consumer.c -o consumer.o
 
 producer.o: producer.c
