@@ -1,4 +1,6 @@
+.git
 .vscode
 *.o
 main
 consumer
+producer

@@ -1,6 +1,6 @@
 /************************************************************************
  * Mikolaj Panka                                                        *
- * KSO 2021                                                             *
+ * KSO 2021-z                                                           *
  * lab3                                                                 *
  ************************************************************************/
 #include <stdio.h>
@@ -41,28 +41,30 @@ int main(int argc, char **argv)
     pid_t parentpid = getpid();
 
     if (fork() == 0) {  // this is child process:
-        printf("fork(), child pid: %u\n", getpid());
-        printf("executing consumer process...");
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumer\", NULL)\n", getpid());
         execv("./consumer", NULL);
     }
     else {  // parent process:
-        // printf("parent pid: %u\n", getpid());
         if (fork() == 0) {  // parent spawning 2nd child:
             // printf("spawned child with pid: %u\n", getpid());
+            // printf("executing producer process...");
+            // sleep(1);
+            // execv("./producer", NULL);
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {
-            printf("spawned child with pid: %u\n", getpid());
-            printf("waiting on sem... ");
-            sem_wait(&smallBuffer->semEmpty);
-            printf("done\n");
+            printf("Child:\t\tParent spawned child with pid: %u\n", getpid());
+            // printf("waiting on sem... ");
+            // sem_wait(&smallBuffer->semEmpty);
+            // printf("done\n");
         }
     }
 
     if (getpid() == parentpid) {  // 2 children spawned, parent exits
-        sleep(1);
+        printf("Parent:\t\tExiting:\n");
+        printf("Parent:\t\t");
         printFifoBig(bigBuffer);
-        // printf("parent exiting\n");
+        sleep(1);  // without this parent exits too quickly and children don't attach to shmem before it gets destroyed
         shmctl(bigBlockId, IPC_RMID, NULL);
         shmctl(medBlockId, IPC_RMID, NULL);
         shmctl(smallBlockId, IPC_RMID, NULL);
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
         // printf("child pid: %u exiting\n", getpid());
     }
     
-    sleep(1);
+    // sleep(1);
 
     return 0;
 }

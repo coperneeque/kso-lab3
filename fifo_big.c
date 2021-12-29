@@ -1,6 +1,6 @@
 /************************************************************************
  * Mikolaj Panka                                                        *
- * KSO 2021                                                             *
+ * KSO 2021-z                                                           *
  * lab3                                                                 *
  ************************************************************************/
 #include <stdio.h>
@@ -123,7 +123,10 @@ int popFifoBig(Fifo_big_t* f)
 
 void printFifoBig(Fifo_big_t* f)
 {
-    printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %u, head_idx: %u, chunk: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, f->chunk);
+    int sev, sfv;
+    sem_getvalue(&f->semEmpty, &sev);
+    sem_getvalue(&f->semFull, &sfv);
+    printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, sev, sfv);
 }
 
 void flushFifoBig(Fifo_big_t *f)
@@ -138,12 +141,16 @@ void flushFifoBig(Fifo_big_t *f)
 #endif
         return;
     }
-
+    sem_wait(&f->mutex);
     f->size     = 0;
     f->head_idx = 0;
     f->tail_idx = 0;
-    sem_init(&f->semEmpty, 1, FIFO_BIG_CAPACITY);
-    sem_init(&f->semFull, 1, 0);
+    for (size_t i = 0; i < f->size; i++)  // adjust semaphores
+    {
+        sem_wait(&f->semFull);
+        sem_post(&f->semEmpty);
+    }
+    sem_post(&f->mutex);
 }
 
 void randFillFifoBig(Fifo_big_t* f)
@@ -169,10 +176,12 @@ void randFillFifoBig(Fifo_big_t* f)
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * f->capacity;
 
-    for (size_t i = 0; i < (size_t)bound; i++)
+    sem_wait(&f->mutex);
+    for (size_t i = 0; i < (size_t)bound; i++)  // semaphores have to track buffer size
     {
+        sem_wait(&f->semEmpty);
         putFifoBig(f, random() % RANGE);
+        sem_post(&f->semFull);
     }
-    sem_init(&f->semEmpty, 1, FIFO_BIG_CAPACITY - (unsigned)bound);
-    sem_init(&f->semFull, 1, (unsigned)bound);
+    sem_post(&f->mutex);
 }
