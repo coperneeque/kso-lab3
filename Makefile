@@ -30,5 +30,5 @@ simple_test.o: simple_test.h simple_test.c fifo_big.h fifo_med.h lifo_small.h
 test_flags: test_flags.h
 
 clean:
-	rm -f *.o main
+	rm -f *.o main consumer
 
