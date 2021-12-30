@@ -5,10 +5,11 @@
  ************************************************************************/
 #include "shared_mem.h"
 
+#include <errno.h>
 // #include <stdlib.h>
 #include <sys/shm.h>
 
-#include "fifo_big.h"
+// #include "fifo_big.h"
 #include "test_flags.h"
 
 int getMemBlock(char* path, int proj_id, size_t size)
@@ -18,12 +19,12 @@ int getMemBlock(char* path, int proj_id, size_t size)
     if (blockKey == -1)
     {
             #ifdef MP_DEBUG
-        perror("getMemBlock(): ftok() failed on mem.txt");s
+        perror("getMemBlock(): ftok() failed on mem.txt");
             #endif
         return -1;
     }
     
-    int blockId = shmget(blockKey, sizeof(Fifo_big_t), 0644 | IPC_CREAT);
+    int blockId = shmget(blockKey, size, 0644 | IPC_CREAT);
     if (blockId == -1)
     {
             #ifdef MP_DEBUG

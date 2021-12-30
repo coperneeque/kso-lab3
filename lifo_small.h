@@ -18,7 +18,7 @@ typedef struct
     unsigned    head_idx;
     unsigned    capacity;
     unsigned    size;
-    unsigned    chunk;
+    unsigned    chunk;  // Assume chunk is much smaller than capacity
 } Lifo_small_t;
 
 /*

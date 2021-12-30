@@ -10,8 +10,10 @@
 #include <time.h>
 
 #include "fifo_big.h"
+
 #include "simple_test.h"
 #include "test_flags.h"
+#include "textcolour.h"
 
 
 extern int errno;
@@ -23,16 +25,16 @@ void initFifoBig(Fifo_big_t *f)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("initFifoBig(): null pointer");
-#endif
+            #endif
         return;
     }
 
     f->capacity = FIFO_BIG_CAPACITY;
     f->size     = 0;
-    f->head_idx = 0;
-    f->tail_idx = 0;
+    f->head_idx = 0;  // next empty index - can be outside array boundaries when buffer is full
+    f->tail_idx = -1;  // index of data to be extracted. can be -1 if buffer empty
     f->chunk    = FIFO_BIG_CHUNK;
     sem_init(&f->mutex, 1, 1);
     sem_init(&f->semEmpty, 1, FIFO_BIG_CAPACITY);
@@ -46,18 +48,18 @@ void putFifoBig(Fifo_big_t *f, int k)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("putFifoBig(): NULL pointer");
-#endif
+            #endif
         return;
     }
 
     if (f->size == f->capacity)
     {
         errno = ENOBUFS;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("putFifoBig(): Buffer is full");
-#endif
+            #endif
         return;
     }
 
@@ -65,9 +67,11 @@ void putFifoBig(Fifo_big_t *f, int k)
     {
         f->data[f->head_idx] = k;
         ++(f->size);
-#ifdef MP_DEBUG
+        f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
+            #ifdef MP_DEBUG
+        textcolour(0, WHITE, BLACK);
         printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
-#endif
+            #endif
         return;
     }
 
@@ -75,9 +79,10 @@ void putFifoBig(Fifo_big_t *f, int k)
     f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
     f->data[f->head_idx] = k;
     ++(f->size);
-#ifdef MP_DEBUG
+        #ifdef MP_DEBUG
+    textcolour(0, WHITE, BLACK);
     printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
-#endif
+        #endif
 }
 
 int popFifoBig(Fifo_big_t* f)
@@ -87,18 +92,18 @@ int popFifoBig(Fifo_big_t* f)
     if(f == NULL) 
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("popFifoBig(): null pointer.");
-#endif
+            #endif
         return -1;
     }
 
     if (f->size == 0)
     {
         errno = ENODATA;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("popFifoBig(): size is 0.");
-#endif
+            #endif
         return -1;
     }
 
@@ -106,18 +111,21 @@ int popFifoBig(Fifo_big_t* f)
     {
         --f->size;
         int ret = f->data[f->tail_idx];
-#ifdef MP_DEBUG
-        printf("popFifoBig(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
-#endif
+        f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
+            #ifdef MP_DEBUG
+        textcolour(0, WHITE, BLACK);
+        printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
+            #endif
         return ret;
     }
     
-    int ret = f->data[f->tail_idx];
     f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
+    int ret = f->data[f->tail_idx];
     --f->size;
-#ifdef MP_DEBUG
-    printf("popFifoBig(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
-#endif
+        #ifdef MP_DEBUG
+    textcolour(0, WHITE, BLACK);
+    printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
+        #endif
     return ret;
 }
 
@@ -126,7 +134,10 @@ void printFifoBig(Fifo_big_t* f)
     int sev, sfv;
     sem_getvalue(&f->semEmpty, &sev);
     sem_getvalue(&f->semFull, &sfv);
-    printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, sev, sfv);
+    // sem_wait(&f->mutex);
+    // textcolour(0, WHITE, BLACK);
+    printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %d, head_idx: %u, semEmpty: %u, semFull: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, sev, sfv);
+    // sem_post(&f->mutex);
 }
 
 void flushFifoBig(Fifo_big_t *f)
@@ -136,15 +147,15 @@ void flushFifoBig(Fifo_big_t *f)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("initFifoBig(): null pointer");
-#endif
+            #endif
         return;
     }
     sem_wait(&f->mutex);
     f->size     = 0;
     f->head_idx = 0;
-    f->tail_idx = 0;
+    f->tail_idx = -1;
     for (size_t i = 0; i < f->size; i++)  // adjust semaphores
     {
         sem_wait(&f->semFull);
@@ -176,6 +187,9 @@ void randFillFifoBig(Fifo_big_t* f)
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * f->capacity;
 
+    textcolour(0, WHITE, BLACK);
+    printf("randFillFifoBig(): Random filling %u elements\n", (size_t)bound);
+    printFifoBig(f);
     sem_wait(&f->mutex);
     for (size_t i = 0; i < (size_t)bound; i++)  // semaphores have to track buffer size
     {

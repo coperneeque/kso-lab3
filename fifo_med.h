@@ -19,7 +19,7 @@ typedef struct
     unsigned    tail_idx;
     unsigned    capacity;
     unsigned    size;
-    unsigned    chunk;
+    unsigned    chunk;  // Assume chunk is much smaller than capacity
 } Fifo_med_t;
 
 /*

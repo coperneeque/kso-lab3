@@ -8,12 +8,14 @@
 #include <string.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "fifo_big.h"
 #include "fifo_med.h"
 #include "lifo_small.h"
 #include "shared_mem.h"
+#include "textcolour.h"
  
 #include "simple_test.h"
 #include "test_flags.h"
@@ -46,6 +48,7 @@ int main(int argc, char **argv)
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
+            textcolour(0, WHITE, BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producer\", NULL)\n", getpid());
             // printf("spawned child with pid: %u\n", getpid());
             // printf("executing producer process...");
@@ -61,11 +64,13 @@ int main(int argc, char **argv)
         }
     }
 
-    if (getpid() == parentpid) {  // 2 children spawned, parent exits
+    if (getpid() == parentpid) {
+        while(wait(NULL) > 0);  // wait for all consumers/producers to finish
+        textcolour(0, WHITE, BLACK);
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
         printFifoBig(bigBuffer);
-        sleep(1);  // without this parent exits too quickly and children don't attach to shmem before it gets destroyed
+        // sleep(1);  // without this parent exits too quickly and children don't attach to shmem before it gets destroyed
         shmctl(bigBlockId, IPC_RMID, NULL);
         shmctl(medBlockId, IPC_RMID, NULL);
         shmctl(smallBlockId, IPC_RMID, NULL);

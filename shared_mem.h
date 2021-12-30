@@ -8,9 +8,9 @@
 
 #include <stddef.h>
 
-#include "fifo_big.h"
-#include "fifo_med.h"
-#include "lifo_small.h"
+// #include "fifo_big.h"
+// #include "fifo_med.h"
+// #include "lifo_small.h"
 
 
 #define SHMEM_FILE ("mem.txt")
