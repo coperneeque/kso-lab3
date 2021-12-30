@@ -68,7 +68,7 @@ void putFifoBig(Fifo_big_t *f, int k)
         f->data[f->head_idx] = k;
         ++(f->size);
         f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
-            #ifdef MP_DEBUG
+            #ifdef MP_V_VERBOSE
         textcolour(0, WHITE, BLACK);
         printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
             #endif
@@ -79,7 +79,7 @@ void putFifoBig(Fifo_big_t *f, int k)
     f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
     f->data[f->head_idx] = k;
     ++(f->size);
-        #ifdef MP_DEBUG
+        #ifdef MP_V_VERBOSE
     textcolour(0, WHITE, BLACK);
     printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
         #endif
@@ -112,7 +112,7 @@ int popFifoBig(Fifo_big_t* f)
         --f->size;
         int ret = f->data[f->tail_idx];
         f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
-            #ifdef MP_DEBUG
+            #ifdef MP_V_VERBOSE
         textcolour(0, WHITE, BLACK);
         printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
             #endif
@@ -122,7 +122,7 @@ int popFifoBig(Fifo_big_t* f)
     f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
     int ret = f->data[f->tail_idx];
     --f->size;
-        #ifdef MP_DEBUG
+        #ifdef MP_V_VERBOSE
     textcolour(0, WHITE, BLACK);
     printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
         #endif
@@ -186,10 +186,11 @@ void randFillFifoBig(Fifo_big_t* f)
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * f->capacity;
-
+        #ifdef MP_V_VERBOSE
     textcolour(0, WHITE, BLACK);
     printf("randFillFifoBig(): Random filling %u elements\n", (size_t)bound);
     printFifoBig(f);
+        #endif
     sem_wait(&f->mutex);
     for (size_t i = 0; i < (size_t)bound; i++)  // semaphores have to track buffer size
     {

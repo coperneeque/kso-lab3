@@ -6,6 +6,12 @@
 
 // The following flags can be set
 
+// to be verbose
+#define MP_VERBOSE
+
+// to be very verbose
+#define MP_V_VERBOSE
+
 // to print more debug info:
 #define MP_DEBUG
 

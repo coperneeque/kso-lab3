@@ -8,7 +8,7 @@
 
 #include <semaphore.h>
 
-#define FIFO_BIG_CAPACITY 100
+#define FIFO_BIG_CAPACITY 30
 #define FIFO_BIG_CHUNK 3
 
 typedef struct
@@ -18,7 +18,7 @@ typedef struct
     sem_t       semEmpty;
     int         data[FIFO_BIG_CAPACITY];
     unsigned    head_idx;
-    unsigned    tail_idx;
+    int         tail_idx;  // can be -1
     unsigned    capacity;
     unsigned    size;
     unsigned    chunk;  // Assume chunk is much smaller than capacity

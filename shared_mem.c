@@ -6,10 +6,9 @@
 #include "shared_mem.h"
 
 #include <errno.h>
-// #include <stdlib.h>
+#include <stdio.h>
 #include <sys/shm.h>
 
-// #include "fifo_big.h"
 #include "test_flags.h"
 
 int getMemBlock(char* path, int proj_id, size_t size)

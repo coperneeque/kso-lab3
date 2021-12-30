@@ -9,6 +9,7 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "fifo_big.h"
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
 // create big buffer
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = getBigBuffer(bigBlockId);
-    randFillFifoBig(bigBuffer);
+    // randFillFifoBig(bigBuffer);
 
 // create medium buffer
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
@@ -41,18 +42,20 @@ int main(int argc, char **argv)
     Lifo_small_t *smallBuffer = getSmallBuffer(smallBlockId);
 
     pid_t parentpid = getpid();
+    srandom(time(NULL));
 
     if (fork() == 0) {  // this is child process:
+            #ifdef MP_V_VERBOSE
         printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumer\", NULL)\n", getpid());
+            #endif
         execv("./consumer", NULL);
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
+                #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producer\", NULL)\n", getpid());
-            // printf("spawned child with pid: %u\n", getpid());
-            // printf("executing producer process...");
-            // sleep(1);
+                #endif
             execv("./producer", NULL);
         }
         else if (fork() == 0)  // parent spawning 3rd child:
@@ -66,11 +69,15 @@ int main(int argc, char **argv)
 
     if (getpid() == parentpid) {
         while(wait(NULL) > 0);  // wait for all consumers/producers to finish
+            #ifdef MP_V_VERBOSE
         textcolour(0, WHITE, BLACK);
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
         printFifoBig(bigBuffer);
-        // sleep(1);  // without this parent exits too quickly and children don't attach to shmem before it gets destroyed
+            #endif
+        shmdt(bigBuffer);
+        shmdt(medBuffer);
+        shmdt(smallBuffer);
         shmctl(bigBlockId, IPC_RMID, NULL);
         shmctl(medBlockId, IPC_RMID, NULL);
         shmctl(smallBlockId, IPC_RMID, NULL);
@@ -79,8 +86,6 @@ int main(int argc, char **argv)
         // printf("child pid: %u exiting\n", getpid());
     }
     
-    // sleep(1);
-
     return 0;
 }
 

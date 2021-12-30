@@ -12,38 +12,46 @@
 #include "fifo_med.h"
 #include "lifo_small.h"
 #include "shared_mem.h"
+#include "test_flags.h"
 #include "textcolour.h"
 
 
 #define NEED_CAP    10
-#define USEC        1000000
+#define USEC        100000
+#define WAIT_CAP    1000000  // 30s
 
 int main(int argc, char **argv)
 {
-    int run = 5;
+    int run = 40;
     int need;
     int toConsume;
     int pid = getpid();
+    long totalWait = 0;
 
 // attach to existing (hopefully]) big buffer
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
-    
+        #ifdef MP_V_VERBOSE
     textcolour(0, RED, BLACK); printf("Consumer:\t%u\tAttached to shared big buffer:\n", pid);
     textcolour(0, RED, BLACK); printf("Consumer:\t%u\t", pid);
     textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
+        #endif
 
-    srandom(time(NULL));
+    // srandom(time(NULL));
 
     while(run)
     {
         // run = random() % 30;
         --run;
         need = random() % NEED_CAP;  // how much data needed by consumer
+            #ifdef MP_VERBOSE
         textcolour(0, RED, BLACK); printf("Consumer:\t%u\trun: %u, need: %u. \n", pid, run, need);
+            #endif
         while (need > 0)
         {
+                #ifdef MP_VERBOSE
             textcolour(0, RED, BLACK); printf("Consumer:\t%u\trun: %u, need: %u. ", pid, run, need);
+                #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             if (bigBuffer->size > 0)  // there is something to consume
             {
@@ -51,7 +59,6 @@ int main(int argc, char **argv)
                  * Data is needed and there is data in the buffer.
                  * Determine how much can be consumed.
                  */
-
                 /*
                  * Checking borderline conditions:
                  */
@@ -81,73 +88,49 @@ int main(int argc, char **argv)
                         need -= toConsume;  // consumer is not fully satisfied
                     }
                 }
-
                 /*
                  * Execute the consumption
                  */
+                    #ifdef MP_VERBOSE
                 textcolour(1, RED, BLACK); printf("Consuming %u units\n", toConsume);
+                    #endif
                 for (size_t i = 0; i < toConsume; i++)
                 {
                     sem_wait(&bigBuffer->semFull);
                     popFifoBig(bigBuffer);  // consume and discard
                     sem_post(&bigBuffer->semEmpty);
                 }
-
                 /*
                  * Open the mutex after consuming from the buffer.
                  * Possibly another consumer/producer will consume/produce data
                  * in the buffer
                  */
                 sem_post(&bigBuffer->mutex);
-                
-                /* 
-                if (need <= bigBuffer->size)  // buffer size is enough or more than needed
-                {
-                    toConsume = need;  // consume all that is needed
-                    need = 0;
-                    if (toConsume > bigBuffer->chunk)  // consume as much as allowed
-                    {
-                        textcolour(1, RED, BLACK); printf("Consuming %u units\n", bigBuffer->chunk);
-                        for (size_t i = 0; i < bigBuffer->chunk; i++)
-                        {
-                            sem_wait(&bigBuffer->semFull);
-                            popFifoBig(bigBuffer);  // consume and discard
-                            sem_post(&bigBuffer->semEmpty);
-                        }
-                        toConsume -= bigBuffer->chunk;
-                    }
-                    else  // consume all that is to be consumed
-                    {
-                        textcolour(1, RED, BLACK); printf("Consuming %u units\n", need);
-                        for (size_t i = 0; i < toConsume; i++)
-                        {
-                            sem_wait(&bigBuffer->semFull);
-                            popFifoBig(bigBuffer);  // consume and discard
-                            sem_post(&bigBuffer->semEmpty);
-                        }
-                        toConsume = 0;
-                    }
-                }
-                else  // need more data than there is in the buffer
-                {
-                    toConsume = bigBuffer->size;  // consume entire buffer
-                    need -= toConsume;  // still need more data
-                }
-                 */
             }
             else  // buffer is empty
             {
                 sem_post(&bigBuffer->mutex);  // open mutex and wait
+                    #ifdef MP_VERBOSE
                 textcolour(1, RED, BLACK); printf("Waiting for %u more units\n", need);
-                // usleep(100000);  // 0.1s
+                    #endif
                 // usleep(USEC);
+                totalWait += USEC;
+                if (totalWait > WAIT_CAP)
+                {
+                    need = 0;
+                    run = 0;
+                    textcolour(0, RED, BLACK); printf("Consumer:\t%u\tWaiting timed-out - exiting.\n", pid);
+                }
+                
             }
         }        
     }
 
+        #ifdef MP_V_VERBOSE
     textcolour(0, RED, BLACK); printf("Consumer:\t%u\tFinishing:\n", pid);
     textcolour(0, RED, BLACK); printf("Consumer:\t%u\t", pid);
     textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
+        #endif
 
     return 0;
 }
