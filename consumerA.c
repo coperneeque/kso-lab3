@@ -9,8 +9,8 @@
 #include <unistd.h>
 
 #include "fifo_big.h"
-#include "fifo_med.h"
-#include "lifo_small.h"
+// #include "fifo_med.h"
+// #include "lifo_small.h"
 #include "shared_mem.h"
 #include "test_flags.h"
 #include "textcolour.h"
@@ -32,8 +32,8 @@ int main(int argc, char **argv)
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BLACK); printf("Consumer:\t%u\tAttached to shared big buffer:\n", pid);
-    textcolour(0, RED, BLACK); printf("Consumer:\t%u\t", pid);
+    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\t", pid);
     textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
         #endif
 
@@ -45,12 +45,12 @@ int main(int argc, char **argv)
         --run;
         need = random() % NEED_CAP;  // how much data needed by consumer
             #ifdef MP_VERBOSE
-        textcolour(0, RED, BLACK); printf("Consumer:\t%u\trun: %u, need: %u. \n", pid, run, need);
+        textcolour(0, RED, BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. \n", pid, run, need);
             #endif
         while (need > 0)
         {
                 #ifdef MP_VERBOSE
-            textcolour(0, RED, BLACK); printf("Consumer:\t%u\trun: %u, need: %u. ", pid, run, need);
+            textcolour(0, RED, BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. ", pid, run, need);
                 #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             if (bigBuffer->size > 0)  // there is something to consume
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
                 {
                     need = 0;
                     run = 0;
-                    textcolour(0, RED, BLACK); printf("Consumer:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
                 
             }
@@ -127,8 +127,8 @@ int main(int argc, char **argv)
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BLACK); printf("Consumer:\t%u\tFinishing:\n", pid);
-    textcolour(0, RED, BLACK); printf("Consumer:\t%u\t", pid);
+    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tFinishing:\n", pid);
+    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\t", pid);
     textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
         #endif
 

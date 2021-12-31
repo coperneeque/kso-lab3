@@ -126,11 +126,23 @@ int popFifoBig(Fifo_big_t* f)
     textcolour(0, WHITE, BLACK);
     printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
         #endif
+
     return ret;
 }
 
 void printFifoBig(Fifo_big_t* f)
 {
+    errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+            #ifdef MP_DEBUG
+        perror("printFifoBig(): null pointer");
+            #endif
+        return;
+    }
+
     int sev, sfv;
     sem_getvalue(&f->semEmpty, &sev);
     sem_getvalue(&f->semFull, &sfv);
@@ -152,6 +164,7 @@ void flushFifoBig(Fifo_big_t *f)
             #endif
         return;
     }
+    
     sem_wait(&f->mutex);
     f->size     = 0;
     f->head_idx = 0;

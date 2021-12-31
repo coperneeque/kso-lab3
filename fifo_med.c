@@ -10,8 +10,10 @@
 #include <time.h>
 
 #include "fifo_med.h"
+
 #include "simple_test.h"
 #include "test_flags.h"
+#include "textcolour.h"
 
 
 extern int errno;
@@ -23,16 +25,16 @@ void initFifoMed(Fifo_med_t *f)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("initFifoMed(): null pointer");
-#endif
+            #endif
         return;
     }
 
     f->capacity = FIFO_MED_CAPACITY;
     f->size     = 0;
-    f->head_idx = 0;
-    f->tail_idx = 0;
+    f->head_idx = 0;  // next empty index - can be outside array boundaries when buffer is full
+    f->tail_idx = -1;  // index of data to be extracted. can be -1 if buffer empty
     f->chunk    = FIFO_MED_CHUNK;
     sem_init(&f->mutex, 1, 1);
     sem_init(&f->semEmpty, 1, FIFO_MED_CAPACITY);
@@ -46,18 +48,18 @@ void putFifoMed(Fifo_med_t *f, int k)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG        
+            #ifdef MP_DEBUG        
         perror("putFifoMed(): NULL pointer");
-#endif
+            #endif
         return;
     }
 
     if (f->size == f->capacity)
     {
         errno = ENOBUFS;
-#ifdef MP_DEBUG        
+            #ifdef MP_DEBUG        
         perror("putFifoMed(): Buffer is full");
-#endif
+            #endif
         return;
     }
 
@@ -65,18 +67,22 @@ void putFifoMed(Fifo_med_t *f, int k)
     {
         f->data[f->head_idx] = k;
         ++(f->size);
-#ifdef MP_DEBUG
+        f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 60
+            #ifdef MP_DEBUG
+        textcolour(0, WHITE, BLACK);
         printf("putFifoMed(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
-#endif
+            #endif
         return;
     }
         
+    // size > 0    
     f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 60
     f->data[f->head_idx] = k;
     ++(f->size);
-#ifdef MP_DEBUG
+        #ifdef MP_DEBUG
+    textcolour(0, WHITE, BLACK);
     printf("putFifoMed(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
-#endif
+        #endif
 }
 
 int popFifoMed(Fifo_med_t* f)
@@ -86,39 +92,64 @@ int popFifoMed(Fifo_med_t* f)
     if(f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("popFifoMed(): null pointer.");
-#endif
+            #endif
         return -1;
     }
 
     if (f->size == 0)
     {
         errno = ENODATA;
-#ifdef MP_DEBUG        
+            #ifdef MP_DEBUG        
         perror("popFifoMed(): size is 0.");
-#endif
+            #endif
         return -1;
     }
 
     if (f->size == 1)
     {
-        int ret = f->data[f->tail_idx];
         --f->size;
-#ifdef MP_DEBUG
+        int ret = f->data[f->tail_idx];
+        f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 60
+            #ifdef MP_DEBUG
+        textcolour(0, WHITE, BLACK);
         printf("popFifoMed(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
-#endif
+            #endif
         return ret;
     }
     
-    int ret = f->data[f->tail_idx];
     f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 60
+    int ret = f->data[f->tail_idx];
     --f->size;
-#ifdef MP_DEBUG
+        #ifdef MP_DEBUG
+    textcolour(0, WHITE, BLACK);
     printf("popFifoMed(): tail_idx: %u, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
-#endif
+        #endif
 
     return ret;
+}
+
+void printFifoMed(Fifo_med_t* f)
+{
+     errno = 0;
+
+    if (f == NULL)
+    {
+        errno = EINVAL;
+            #ifdef MP_DEBUG
+        perror("printFifoMed(): null pointer");
+            #endif
+        return;
+    }
+
+    int sev, sfv;
+    sem_getvalue(&f->semEmpty, &sev);
+    sem_getvalue(&f->semFull, &sfv);
+    // sem_wait(&f->mutex);
+    // textcolour(0, WHITE, BLACK);
+    printf("Medium FIFO buffer. Capacity: %u, size: %u, tail_idx: %d, head_idx: %u, semEmpty: %u, semFull: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, sev, sfv);
+    // sem_post(&f->mutex);
 }
 
 void flushFifoMed(Fifo_med_t *f)
@@ -128,15 +159,22 @@ void flushFifoMed(Fifo_med_t *f)
     if (f == NULL)
     {
         errno = EINVAL;
-#ifdef MP_DEBUG
+            #ifdef MP_DEBUG
         perror("flushFifoMed(): null pointer");
-#endif
+            #endif
         return;
     }
 
+    sem_wait(&f->mutex);
     f->size     = 0;
     f->head_idx = 0;
-    f->tail_idx = 0;
+    f->tail_idx = -1;
+    for (size_t i = 0; i < f->size; i++)  // adjust semaphores
+    {
+        sem_wait(&f->semFull);
+        sem_post(&f->semEmpty);
+    }
+    sem_post(&f->mutex);
 }
 
 void randFillFifoMed(Fifo_med_t* f)
@@ -161,9 +199,17 @@ void randFillFifoMed(Fifo_med_t* f)
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * f->capacity;
-
+        #ifdef MP_V_VERBOSE
+    textcolour(0, WHITE, BLACK);
+    printf("randFillFifoMed(): Random filling %u elements\n", (size_t)bound);
+    printFifoMed(f);
+        #endif
+    sem_wait(&f->mutex);
     for (size_t i = 0; i < (size_t)bound; i++)
     {
+        sem_wait(&f->semEmpty);
         putFifoMed(f, random() % RANGE);
+        sem_post(&f->semFull);
     }
+    sem_post(&f->mutex);
 }

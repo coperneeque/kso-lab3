@@ -46,17 +46,17 @@ int main(int argc, char **argv)
 
     if (fork() == 0) {  // this is child process:
             #ifdef MP_V_VERBOSE
-        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumer\", NULL)\n", getpid());
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", NULL)\n", getpid());
             #endif
-        execv("./consumer", NULL);
+        execv("./consumerA", NULL);
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producer\", NULL)\n", getpid());
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", NULL)\n", getpid());
                 #endif
-            execv("./producer", NULL);
+            execv("./producerA", NULL);
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {

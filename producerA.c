@@ -19,7 +19,7 @@
 #define PROD_CAP    10
 #define RANGE       100
 #define USEC        100000
-#define WAIT_CAP    1000000  // 30s
+#define WAIT_CAP    1000000  // 1s
 
 int main(int argc, char **argv)
 {
@@ -35,8 +35,8 @@ int main(int argc, char **argv)
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, GREEN, BLACK); printf("Producer:\t%u\tAttached to shared big buffer:\n", pid);
-    textcolour(0, GREEN, BLACK); printf("Producer:\t%u\t", pid);
+    textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\t", pid);
     textcolour(0, GREEN, BLACK); printFifoBig(bigBuffer);
         #endif
 
@@ -51,11 +51,11 @@ int main(int argc, char **argv)
         }
         
             #ifdef MP_VERBOSE
-        textcolour(0, GREEN, BLACK); printf("Producer:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
             #endif
         while (produced > 0) {
                 #ifdef MP_VERBOSE
-            textcolour(0, GREEN, BLACK); printf("Producer:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
+            textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
                 #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             bufEmpty = bigBuffer->capacity - bigBuffer->size;
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
                 /*
                  * If there is no space in the buffer then the producer can't wait.
                  * In normal conditions running out of buffer space results in data loss.
-                 * This is simulated here by resetting of the produced variable.
+                 * This is simulated here by zeroing of the 'produced' variable.
                  */
                 produced = 0;
                     #ifdef MP_VERBOSE
@@ -113,19 +113,18 @@ int main(int argc, char **argv)
                     #endif
                 // usleep(USEC);
                 totalWait += USEC;
-                if (totalWait > WAIT_CAP)
-                {
+                if (totalWait > WAIT_CAP) {
                     produced = 0;
                     run = 0;
-                    textcolour(0, GREEN, BLACK); printf("Producer:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
             } 
         }        
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, GREEN, BLACK); printf("Producer:\t%u\tFinishing:\n", pid);
-    textcolour(0, GREEN, BLACK); printf("Producer:\t%u\t", pid);
+    textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\tFinishing:\n", pid);
+    textcolour(0, GREEN, BLACK); printf("Producer A:\t%u\t", pid);
     textcolour(0, GREEN, BLACK); printFifoBig(bigBuffer);
         #endif
 

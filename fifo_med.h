@@ -6,6 +6,8 @@
 #ifndef FIFO_MED_H
 #define FIFO_MED_H
 
+#include <semaphore.h>
+
 #define FIFO_MED_CAPACITY 60
 #define FIFO_MED_CHUNK 5
 
@@ -16,7 +18,7 @@ typedef struct
     sem_t       semEmpty;
     int         data[FIFO_MED_CAPACITY];
     unsigned    head_idx;
-    unsigned    tail_idx;
+    int         tail_idx;  // can be -1
     unsigned    capacity;
     unsigned    size;
     unsigned    chunk;  // Assume chunk is much smaller than capacity
@@ -29,6 +31,7 @@ void initFifoMed();
 
 void putFifoMed(Fifo_med_t*, int);
 int popFifoMed(Fifo_med_t*);
+void printFifoMed(Fifo_med_t*);
 
 /*
  * Empty the Fifo by resetting head and tail
