@@ -9,6 +9,8 @@
 #define LIFO_SMALL_CAPACITY 30
 #define LIFO_SMALL_CHUNK 4
 
+#include <semaphore.h>
+
 typedef struct
 {
     sem_t       mutex;
@@ -28,6 +30,7 @@ void initLifoSmall();
 
 void putLifoSmall(Lifo_small_t*, int);
 int popLifoSmall(Lifo_small_t*);
+void printLifoSmall(Lifo_small_t*);
 
 /*
  * Empty the Lifo by resetting head
@@ -39,4 +42,5 @@ void flushLifoSmall(Lifo_small_t*);
  * with random values
  */
 void randFillLifoSmall(Lifo_small_t*);
+
 #endif

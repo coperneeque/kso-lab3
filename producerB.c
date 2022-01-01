@@ -8,9 +8,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "fifo_big.h"
+// #include "fifo_big.h"
 #include "fifo_med.h"
-#include "lifo_small.h"
+// #include "lifo_small.h"
 #include "shared_mem.h"
 #include "test_flags.h"
 #include "textcolour.h"

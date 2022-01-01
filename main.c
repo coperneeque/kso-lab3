@@ -69,6 +69,15 @@ int main(int argc, char **argv)
                 #endif
             execv("./producerB", NULL);
         }
+        else if (fork() == 0)  // parent spawning 3rd child:
+        {
+            // this is child process:
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerB\", NULL)\n", getpid());
+                #endif
+            execv("./consumerB", NULL);
+        }
     }
 
     if (getpid() == parentpid) {
@@ -78,6 +87,7 @@ int main(int argc, char **argv)
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
         printFifoBig(bigBuffer);
+        printFifoMed(medBuffer);
             #endif
         shmdt(bigBuffer);
         shmdt(medBuffer);
