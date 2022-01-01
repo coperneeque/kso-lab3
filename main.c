@@ -44,7 +44,8 @@ int main(int argc, char **argv)
     pid_t parentpid = getpid();
     srandom(time(NULL));
 
-    if (fork() == 0) {  // this is child process:
+    if (fork() == 0) {
+        // this is child process:
             #ifdef MP_V_VERBOSE
         printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", NULL)\n", getpid());
             #endif
@@ -52,6 +53,7 @@ int main(int argc, char **argv)
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
+            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", NULL)\n", getpid());
@@ -60,10 +62,12 @@ int main(int argc, char **argv)
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {
-            // printf("Child:\t\tParent spawned child with pid: %u\n", getpid());
-            // printf("waiting on sem... ");
-            // sem_wait(&smallBuffer->semEmpty);
-            // printf("done\n");
+            // this is child process:
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerB\", NULL)\n", getpid());
+                #endif
+            execv("./producerB", NULL);
         }
     }
 
