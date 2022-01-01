@@ -26,7 +26,7 @@ void initFifoBig(Fifo_big_t *f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("initFifoBig(): null pointer");
+        perror("[ error ] initFifoBig(): null pointer");
             #endif
         return;
     }
@@ -49,7 +49,7 @@ void putFifoBig(Fifo_big_t *f, int k)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("putFifoBig(): NULL pointer");
+        perror("[ error ] putFifoBig(): NULL pointer");
             #endif
         return;
     }
@@ -58,7 +58,7 @@ void putFifoBig(Fifo_big_t *f, int k)
     {
         errno = ENOBUFS;
             #ifdef MP_DEBUG
-        perror("putFifoBig(): Buffer is full");
+        perror("[ error ] putFifoBig(): Buffer is full");
             #endif
         return;
     }
@@ -93,7 +93,7 @@ int popFifoBig(Fifo_big_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("popFifoBig(): null pointer.");
+        perror("[ error ] popFifoBig(): null pointer.");
             #endif
         return -1;
     }
@@ -102,7 +102,7 @@ int popFifoBig(Fifo_big_t* f)
     {
         errno = ENODATA;
             #ifdef MP_DEBUG
-        perror("popFifoBig(): size is 0.");
+        perror("[ error ] popFifoBig(): size is 0.");
             #endif
         return -1;
     }
@@ -138,7 +138,7 @@ void printFifoBig(Fifo_big_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("printFifoBig(): null pointer");
+        perror("[ error ] printFifoBig(): null pointer");
             #endif
         return;
     }
@@ -160,7 +160,7 @@ void flushFifoBig(Fifo_big_t *f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("initFifoBig(): null pointer");
+        perror("[ error ] initFifoBig(): null pointer");
             #endif
         return;
     }
@@ -189,7 +189,7 @@ void randFillFifoBig(Fifo_big_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("randFillFifoBig(): null pointer");
+        perror("[ error ] randFillFifoBig(): null pointer");
             #endif
         return;
     }

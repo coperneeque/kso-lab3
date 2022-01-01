@@ -18,7 +18,7 @@ int getMemBlock(char* path, int proj_id, size_t size)
     if (blockKey == -1)
     {
             #ifdef MP_DEBUG
-        perror("getMemBlock(): ftok() failed on mem.txt");
+        perror("[ error ] getMemBlock(): ftok() failed on mem.txt");
             #endif
         return -1;
     }
@@ -27,7 +27,7 @@ int getMemBlock(char* path, int proj_id, size_t size)
     if (blockId == -1)
     {
             #ifdef MP_DEBUG
-        perror("getMemBlock(): shmget() failed");
+        perror("[ error ] getMemBlock(): shmget() failed");
             #endif
         return -1;
     }
@@ -43,7 +43,7 @@ void* attachMemBlock(int block_id)
         #ifdef MP_DEBUG
     if (ret == (void*)0)
     {
-        perror("attachMemBlock(): shmat() failed");
+        perror("[ error ] attachMemBlock(): shmat() failed");
     }
         #endif
 

@@ -9,8 +9,8 @@
 #include <unistd.h>
 
 // #include "fifo_big.h"
-#include "fifo_med.h"
-// #include "lifo_small.h"
+// #include "fifo_med.h"
+#include "lifo_small.h"
 #include "shared_mem.h"
 #include "test_flags.h"
 #include "textcolour.h"
@@ -31,13 +31,13 @@ int main(int argc, char **argv)
     int pid = getpid();
     long totalWait = 0;
 
-// attach to existing (hopefully]) medium buffer
-    int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
-    Fifo_med_t *medBuffer = attachMemBlock(medBlockId);
+// attach to existing (hopefully]) small buffer
+    int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
+    Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\tAttached to shared medium buffer:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printFifoMed(medBuffer);
+    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
+    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
+    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
         #endif
 
     // srandom(time(NULL));
@@ -51,14 +51,14 @@ int main(int argc, char **argv)
         }
         
             #ifdef MP_VERBOSE
-        textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
             #endif
         while (produced > 0) {
                 #ifdef MP_VERBOSE
-            textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
+            textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
                 #endif
-            sem_wait(&medBuffer->mutex);  // access the buffer
-            bufEmpty = medBuffer->capacity - medBuffer->size;
+            sem_wait(&smallBuffer->mutex);  // access the buffer
+            bufEmpty = smallBuffer->capacity - smallBuffer->size;
             if (bufEmpty > 0) {  // there is space in the buffer
                 /*
                  * There is data produced and there is space in the buffer.
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                 /*
                  * Check borderline conditions:
                  */
-                if (bufEmpty < medBuffer->chunk) {  // buffer is less than 1 chunk empty
+                if (bufEmpty < smallBuffer->chunk) {  // buffer is less than 1 chunk empty
                     if (produced <= bufEmpty) {  // all produced data will fit in the buffer
                         toInsert = produced;  // all produced data can be inserted
                         produced = 0;  // producer is satisfied
@@ -76,11 +76,11 @@ int main(int argc, char **argv)
                         produced -= toInsert;  // producer is not satisfied
                     }
                 } else {  // buffer is at least 1 chunk empty
-                    if (produced <= medBuffer->chunk) {  // all produced data will fit in 1 chunk
+                    if (produced <= smallBuffer->chunk) {  // all produced data will fit in 1 chunk
                         toInsert = produced;  // all produced data can be inserted
                         produced = 0;  // producer is satisfied
                     } else {  // produced data will not fit in 1 chunk
-                        toInsert = medBuffer->chunk;  // some of the data can be inserted into 1 full chunk
+                        toInsert = smallBuffer->chunk;  // some of the data can be inserted into 1 full chunk
                         produced -= toInsert;  // producer is not satisfied
                     }
                 }
@@ -91,17 +91,17 @@ int main(int argc, char **argv)
                 textcolour(1, CYAN, BLACK); printf("Inserting %u units\n", toInsert);
                     #endif
                 for (size_t i = 0; i < toInsert; i++) {
-                    sem_wait(&medBuffer->semEmpty);
-                    putFifoMed(medBuffer,products[i]);
-                    sem_post(&medBuffer->semFull);
+                    sem_wait(&smallBuffer->semEmpty);
+                    putLifoSmall(smallBuffer,products[i]);
+                    sem_post(&smallBuffer->semFull);
                 }
                 /*
                  * Open the mutex after inserting into the buffer.
                  * Possibly another consumer/producer will consume/produce data
                  */
-                sem_post(&medBuffer->mutex);
+                sem_post(&smallBuffer->mutex);
             } else {  // no space in the buffer
-                sem_post(&medBuffer->mutex);
+                sem_post(&smallBuffer->mutex);
                 /*
                  * If there is no space in the buffer then the producer can't wait.
                  * In normal conditions running out of buffer space results in data loss.
@@ -116,16 +116,16 @@ int main(int argc, char **argv)
                 if (totalWait > WAIT_CAP) {
                     produced = 0;
                     run = 0;
-                    textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
             } 
         }        
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\tFinishing:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer B:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printFifoMed(medBuffer);
+    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tFinishing:\n", pid);
+    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
+    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
         #endif
 
     return 0;

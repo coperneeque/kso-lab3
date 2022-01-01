@@ -23,7 +23,7 @@ void test_FifoBig(Fifo_big_t* fifo)
     {
         errno = EINVAL;
 #ifdef MP_DEBUG
-        perror("test_FifoBig(): NULL pointer");
+        perror("[ error ] test_FifoBig(): NULL pointer");
 #endif
         return;
     }
@@ -78,7 +78,7 @@ void test_FifoMed(Fifo_med_t* fifo)
     {
         errno = EINVAL;
 #ifdef MP_DEBUG
-        perror("test_FifoMed(): NULL pointer");
+        perror("[ error ] test_FifoMed(): NULL pointer");
 #endif
         return;
     }
@@ -134,7 +134,7 @@ void test_LifoSmall(Lifo_small_t *lifo)
     {
         errno = EINVAL;
 #ifdef MP_DEBUG
-        perror("test_LifoSmall(): NULL pointer");
+        perror("[ error ] test_LifoSmall(): NULL pointer");
 #endif
         return;
     }

@@ -26,7 +26,7 @@ void initFifoMed(Fifo_med_t *f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("initFifoMed(): null pointer");
+        perror("[ error ] initFifoMed(): null pointer");
             #endif
         return;
     }
@@ -49,7 +49,7 @@ void putFifoMed(Fifo_med_t *f, int k)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG        
-        perror("putFifoMed(): NULL pointer");
+        perror("[ error ] putFifoMed(): NULL pointer");
             #endif
         return;
     }
@@ -58,7 +58,7 @@ void putFifoMed(Fifo_med_t *f, int k)
     {
         errno = ENOBUFS;
             #ifdef MP_DEBUG        
-        perror("putFifoMed(): Buffer is full");
+        perror("[ error ] putFifoMed(): Buffer is full");
             #endif
         return;
     }
@@ -93,7 +93,7 @@ int popFifoMed(Fifo_med_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("popFifoMed(): null pointer.");
+        perror("[ error ] popFifoMed(): null pointer.");
             #endif
         return -1;
     }
@@ -102,7 +102,7 @@ int popFifoMed(Fifo_med_t* f)
     {
         errno = ENODATA;
             #ifdef MP_DEBUG        
-        perror("popFifoMed(): size is 0.");
+        perror("[ error ] popFifoMed(): size is 0.");
             #endif
         return -1;
     }
@@ -138,7 +138,7 @@ void printFifoMed(Fifo_med_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("printFifoMed(): null pointer");
+        perror("[ error ] printFifoMed(): null pointer");
             #endif
         return;
     }
@@ -160,7 +160,7 @@ void flushFifoMed(Fifo_med_t *f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("flushFifoMed(): null pointer");
+        perror("[ error ] flushFifoMed(): null pointer");
             #endif
         return;
     }
@@ -189,7 +189,7 @@ void randFillFifoMed(Fifo_med_t* f)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("randFillFifoMed(): null pointer");
+        perror("[ error ] randFillFifoMed(): null pointer");
             #endif
         return;
     }

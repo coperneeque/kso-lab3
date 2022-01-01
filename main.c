@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     pid_t parentpid = getpid();
     srandom(time(NULL));
 
-    if (fork() == 0) {
+    if (fork() == 0) {  // parent spawning 1st child:
         // this is child process:
             #ifdef MP_V_VERBOSE
         printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", NULL)\n", getpid());
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
                 #endif
             execv("./producerB", NULL);
         }
-        else if (fork() == 0)  // parent spawning 3rd child:
+        else if (fork() == 0)  // parent spawning 4th child:
         {
             // this is child process:
                 #ifdef MP_V_VERBOSE
@@ -77,6 +77,24 @@ int main(int argc, char **argv)
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerB\", NULL)\n", getpid());
                 #endif
             execv("./consumerB", NULL);
+        }
+        else if (fork() == 0)  // parent spawning 5th child:
+        {
+            // this is child process:
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerC\", NULL)\n", getpid());
+                #endif
+            execv("./producerC", NULL);
+        }
+        else if (fork() == 0)  // parent spawning 6th child:
+        {
+            // this is child process:
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerC\", NULL)\n", getpid());
+                #endif
+            execv("./consumerC", NULL);
         }
     }
 
@@ -87,7 +105,10 @@ int main(int argc, char **argv)
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
         printFifoBig(bigBuffer);
+        printf("Parent:\t\t");
         printFifoMed(medBuffer);
+        printf("Parent:\t\t");
+        printLifoSmall(smallBuffer);
             #endif
         shmdt(bigBuffer);
         shmdt(medBuffer);

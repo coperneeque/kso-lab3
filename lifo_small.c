@@ -26,7 +26,7 @@ void initLifoSmall(Lifo_small_t *l)
     {
         errno = EINVAL;
 #ifdef MP_DEBUG        
-        perror("initLifoSmall(): null pointer");
+        perror("[ error ] initLifoSmall(): null pointer");
 #endif
         return;
     }
@@ -48,7 +48,7 @@ void putLifoSmall(Lifo_small_t *l, int k)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG        
-        perror("putLifoSmall(): NULL pointer");
+        perror("[ error ] putLifoSmall(): NULL pointer");
             #endif
         return;
     }
@@ -57,7 +57,7 @@ void putLifoSmall(Lifo_small_t *l, int k)
     {
         errno = ENOBUFS;
             #ifdef MP_DEBUG        
-        perror("putLifoSmall(): Buffer is full");
+        perror("[ error ] putLifoSmall(): Buffer is full");
             #endif
         return;
     }
@@ -79,7 +79,7 @@ int popLifoSmall(Lifo_small_t* l)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("popLifoSmall(): null pointer.");
+        perror("[ error ] popLifoSmall(): null pointer.");
             #endif
         return -1;
     }
@@ -88,7 +88,7 @@ int popLifoSmall(Lifo_small_t* l)
     {
         errno = ENODATA;
             #ifdef MP_DEBUG        
-        perror("popLifoSmall(): size is 0.");
+        perror("[ error ] popLifoSmall(): size is 0.");
             #endif
         return -1;
     }
@@ -113,7 +113,7 @@ void printLifoSmall(Lifo_small_t* l)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("printFifoBig(): null pointer");
+        perror("[ error ] printFifoBig(): null pointer");
             #endif
         return;
     }
@@ -123,7 +123,7 @@ void printLifoSmall(Lifo_small_t* l)
     sem_getvalue(&l->semFull, &sfv);
     // sem_wait(&f->mutex);
     // textcolour(0, WHITE, BLACK);
-    printf("SMall LIFO buffer. Capacity: %u, size: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", l->capacity, l->size, l->head_idx, sev, sfv);
+    printf("Small LIFO buffer. Capacity: %u, size: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", l->capacity, l->size, l->head_idx, sev, sfv);
     // sem_post(&f->mutex);
 }
 
@@ -135,7 +135,7 @@ void flushLifoSmall(Lifo_small_t *l)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("flushLifoSmall(): null pointer");
+        perror("[ error ] flushLifoSmall(): null pointer");
             #endif
         return;
     }
@@ -163,7 +163,7 @@ void randFillLifoSmall(Lifo_small_t* l)
     {
         errno = EINVAL;
             #ifdef MP_DEBUG
-        perror("randFillLifoSmall(): null pointer");
+        perror("[ error ] randFillLifoSmall(): null pointer");
             #endif
         return;
     }
