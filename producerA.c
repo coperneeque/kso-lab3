@@ -10,8 +10,6 @@
 #include <unistd.h>
 
 #include "fifo_big.h"
-// #include "fifo_med.h"
-// #include "lifo_small.h"
 #include "shared_mem.h"
 #include "test_flags.h"
 #include "textcolour.h"
@@ -19,12 +17,10 @@
 
 #define PROD_CAP    10
 #define RANGE       100
-#define USEC        100000
-#define WAIT_CAP    1000000  // 1s
 
 int main(int argc, char **argv)
 {
-    int run = 40;
+    int roundNo = 0;
     int produced;
     int products[PROD_CAP];
     int toInsert;
@@ -36,27 +32,27 @@ int main(int argc, char **argv)
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\tAttached to shared big buffer:\n", pid);
-    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\t", pid);
+    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\t", pid);
     textcolour(0, GREEN, BG_BLACK); printFifoBig(bigBuffer);
         #endif
+    sem_wait(&bigBuffer->mutex);
+    roundNo = bigBuffer->capacity * ROUND_MULT;
+    sem_post(&bigBuffer->mutex);
 
-    // srandom(time(NULL));
-
-    while(run) {
-        // run = random() % 30;
-        --run;
+    while(roundNo) {
+        --roundNo;
         produced = random() % PROD_CAP;  // how much is produced
         for (size_t i = 0; i < produced; i++) {  // simulate production
             products[i] = random() % RANGE;
         }
         
             #ifdef MP_VERBOSE
-        textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\t\t\t\trun: %u, produced: %u units\n", pid, roundNo, produced);
             #endif
         while (produced > 0) {
                 #ifdef MP_VERBOSE
-            textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
+            textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\t\t\t\trun: %u, to insert: %u units. ", pid, roundNo, produced);
                 #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             bufEmpty = bigBuffer->capacity - bigBuffer->size;
@@ -93,7 +89,7 @@ int main(int argc, char **argv)
                     #endif
                 for (size_t i = 0; i < toInsert; i++) {
                     sem_wait(&bigBuffer->semEmpty);
-                    putFifoBig(bigBuffer,products[i]);
+                    putFifoBig(bigBuffer, products[i]);
                     sem_post(&bigBuffer->semFull);
                 }
                 /*
@@ -110,22 +106,26 @@ int main(int argc, char **argv)
                  */
                 produced = 0;
                     #ifdef MP_VERBOSE
-                textcolour(UNDERLINE, GREEN, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
+                textcolour(UNDERLINE, GREEN, BG_BLACK); printf("No space in buffer - dropping data.\n");
                     #endif
-                // usleep(USEC);
+                    #ifdef DO_WAIT
+                usleep(USEC);
+                    #endif
+                    #ifdef DO_TIMEOUT
                 totalWait += USEC;
                 if (totalWait > WAIT_CAP) {
                     produced = 0;
-                    run = 0;
-                    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    roundNo = 0;
+                    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
+                    #endif
             } 
         }        
     }
 
+    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\tFinishing:\n", pid);
         #ifdef MP_V_VERBOSE
-    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\tFinishing:\n", pid);
-    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t%u\t", pid);
+    textcolour(0, GREEN, BG_BLACK); printf("Producer A:\t\t%u\t", pid);
     textcolour(0, GREEN, BG_BLACK); printFifoBig(bigBuffer);
         #endif
     shmdt(bigBuffer);

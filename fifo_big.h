@@ -8,7 +8,7 @@
 
 #include <semaphore.h>
 
-#define FIFO_BIG_CAPACITY 30
+#define FIFO_BIG_CAPACITY 100
 #define FIFO_BIG_CHUNK 3
 
 typedef struct
@@ -17,8 +17,8 @@ typedef struct
     sem_t       semFull;
     sem_t       semEmpty;
     int         data[FIFO_BIG_CAPACITY];
-    unsigned    head_idx;
-    int         tail_idx;  // can be -1
+    unsigned    head_idx;  // next empty index - will wrap around when buffer is full
+    int         tail_idx;  // index of data to be extracted. can be -1 if buffer empty
     unsigned    capacity;
     unsigned    size;
     unsigned    chunk;  // Assume chunk is much smaller than capacity

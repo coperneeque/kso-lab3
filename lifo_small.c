@@ -62,6 +62,7 @@ void putLifoSmall(Lifo_small_t *l, int k)
         return;
     }
 
+    // size < capacity
     l->data[l->head_idx] = k;
     ++l->head_idx;
     ++l->size;
@@ -121,10 +122,11 @@ void printLifoSmall(Lifo_small_t* l)
     int sev, sfv;
     sem_getvalue(&l->semEmpty, &sev);
     sem_getvalue(&l->semFull, &sfv);
-    // sem_wait(&f->mutex);
+    // assume call is made synchronously
+    sem_wait(&l->mutex);
     // textcolour(0, WHITE, BG_BLACK);
     printf("Small LIFO buffer. Capacity: %u, size: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", l->capacity, l->size, l->head_idx, sev, sfv);
-    // sem_post(&f->mutex);
+    sem_post(&l->mutex);
 }
 
 void flushLifoSmall(Lifo_small_t *l)
@@ -172,10 +174,10 @@ void randFillLifoSmall(Lifo_small_t* l)
 
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
-    double bound = (double)percentage / 100 * l->capacity;
+    float bound = (float)percentage / 100 * l->capacity;
         #ifdef MP_V_VERBOSE
     textcolour(0, WHITE, BG_BLACK);
-    printf("randFillLifoSmall(): Random filling %u elements\n", (size_t)bound);
+    printf("randFillLifoSmall(): Random filling %u elements\n", (int)bound);
     printLifoSmall(l);
         #endif
     sem_wait(&l->mutex);

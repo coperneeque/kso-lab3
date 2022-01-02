@@ -16,12 +16,10 @@
 
 
 #define NEED_CAP    10
-#define USEC        100000
-#define WAIT_CAP    1000000  // 30s
 
 int main(int argc, char **argv)
 {
-    int run = 40;
+    int roundNo = 0;
     int need;
     int toConsume;
     int pid = getpid();
@@ -31,25 +29,25 @@ int main(int argc, char **argv)
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tAttached to shared big buffer:\n", pid);
-    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\t", pid);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\t", pid);
     textcolour(0, RED, BG_BLACK); printFifoBig(bigBuffer);
         #endif
+    sem_wait(&bigBuffer->mutex);
+    roundNo = bigBuffer->capacity * ROUND_MULT;
+    sem_post(&bigBuffer->mutex);
 
-    // srandom(time(NULL));
-
-    while(run)
+    while(roundNo)
     {
-        // run = random() % 30;
-        --run;
+        --roundNo;
         need = random() % NEED_CAP;  // how much data needed by consumer
             #ifdef MP_VERBOSE
-        textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. \n", pid, run, need);
+        textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\t\t\t\trun: %u, need: %u. \n", pid, roundNo, need);
             #endif
         while (need > 0)
         {
                 #ifdef MP_VERBOSE
-            textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. ", pid, run, need);
+            textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\t\t\t\trun: %u, need: %u. ", pid, roundNo, need);
                 #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             if (bigBuffer->size > 0)  // there is something to consume
@@ -112,22 +110,25 @@ int main(int argc, char **argv)
                     #ifdef MP_VERBOSE
                 textcolour(UNDERLINE, RED, BG_BLACK); printf("Waiting for %u more units\n", need);
                     #endif
-                // usleep(USEC);
+                    #ifdef DO_WAIT
+                usleep(USEC);
+                    #endif
+                    #ifdef DO_TIMEOUT
                 totalWait += USEC;
                 if (totalWait > WAIT_CAP)
                 {
                     need = 0;
-                    run = 0;
-                    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    roundNo = 0;
+                    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
-                
+                    #endif
             }
         }        
     }
 
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\tFinishing:\n", pid);
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tFinishing:\n", pid);
-    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\t", pid);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t\t%u\t", pid);
     textcolour(0, RED, BG_BLACK); printFifoBig(bigBuffer);
         #endif
     shmdt(bigBuffer);

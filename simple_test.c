@@ -121,13 +121,10 @@ void test_FifoMed(Fifo_med_t* fifo)
     }
 
     printf("[  FifoMed  ]   head_idx: %u, tail_idx: %u, capacity: %u, size: %u\n", fifo->head_idx, fifo->tail_idx, fifo->capacity, fifo->size);
-
-    // flushFifoMed();
 }
 
 void test_LifoSmall(Lifo_small_t *lifo)
 {
-    // extern int errno;
     errno = 0;
 
     if (lifo == NULL)
@@ -152,6 +149,4 @@ void test_LifoSmall(Lifo_small_t *lifo)
     }
     
     printf("[ LifoSmall ]   head_idx: %u, capacity: %u, size: %u\n", lifo->head_idx, lifo->capacity, lifo->size);
-
-    // flushLifoSmall();
 }

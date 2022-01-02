@@ -19,8 +19,6 @@
 
 #define PROD_CAP    10
 #define RANGE       100
-#define USEC        100000
-#define WAIT_CAP    1000000  // 1s
 
 
 void insertBig(int amount);
@@ -28,20 +26,18 @@ void insertMed(int amount);
 void insertSmall(int amount);
 
 
-Fifo_big_t *bigBuffer;
-Fifo_med_t *medBuffer;
-Lifo_small_t *smallBuffer;
-int products[PROD_CAP];
-int pid;
-int run = 40;
-long totalWait = 0;
+Fifo_big_t      *bigBuffer;
+Fifo_med_t      *medBuffer;
+Lifo_small_t    *smallBuffer;
+int             products[PROD_CAP];
+int             pid;
+int             roundNo = 0;
+long            totalWait = 0;
 
 
 int main(int argc, char **argv)
 {
     int produced;
-    int toInsert;
-
     pid = getpid();
 
 // attach to existing buffers
@@ -52,6 +48,9 @@ int main(int argc, char **argv)
     textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
     textcolour(0, GRAY, BG_BLACK); printFifoBig(bigBuffer);
         #endif
+    sem_wait(&bigBuffer->mutex);
+    roundNo = bigBuffer->capacity * ROUND_MULT;
+    sem_post(&bigBuffer->mutex);
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
     medBuffer = attachMemBlock(medBlockId);
         #ifdef MP_V_VERBOSE
@@ -67,16 +66,14 @@ int main(int argc, char **argv)
     textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
 
-    // srandom(time(NULL));
-    while(run) {
-        // run = random() % 30;
-        --run;
+    while(roundNo) {
+        --roundNo;
         produced = random() % PROD_CAP;
         for (size_t i = 0; i < produced; i++) {
             products[i] = random() % RANGE;
         }
             #ifdef MP_VERBOSE
-        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\trun: %u, produced: %u units\n", pid, roundNo, produced);
             #endif
         switch (random() % 3)  // random select buffer to insert into
         {
@@ -93,11 +90,6 @@ int main(int argc, char **argv)
             break;
         }
     }
-        #ifdef MP_V_VERBOSE
-    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
-    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
-    textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
-        #endif
     shmdt(smallBuffer);
     shmdt(medBuffer);
     shmdt(bigBuffer);
@@ -112,7 +104,7 @@ void insertBig(int amount)
 
     while (amount > 0) {
             #ifdef MP_VERBOSE
-        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Big Buffer ]\trun: %u, to insert: %u units. ", pid, run, amount);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[   Big Buffer  ]\trun: %u, to insert: %u units. ", pid, roundNo, amount);
             #endif
         sem_wait(&bigBuffer->mutex);
         bufEmpty = bigBuffer->capacity - bigBuffer->size;
@@ -147,15 +139,24 @@ void insertBig(int amount)
             sem_post(&bigBuffer->mutex);
             amount = 0;
                 #ifdef MP_VERBOSE
-            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
+            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n");
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP) {
                 amount = 0;  // break out of local while()
-                run = 0;  // break out of main while()
-                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Big Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                roundNo = 0;  // break out of main while()
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[   Big Buffer  ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+                textcolour(0, GRAY, BG_BLACK); printFifoBig(bigBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }
@@ -167,7 +168,7 @@ void insertMed(int amount)
 
     while (amount > 0) {
             #ifdef MP_VERBOSE
-        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Medium Buffer ]\trun: %u, to insert: %u units. ", pid, run, amount);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Medium Buffer ]\trun: %u, to insert: %u units. ", pid, roundNo, amount);
             #endif
         sem_wait(&medBuffer->mutex);
         bufEmpty = medBuffer->capacity - medBuffer->size;
@@ -202,15 +203,24 @@ void insertMed(int amount)
             sem_post(&medBuffer->mutex);
             amount = 0;
                 #ifdef MP_VERBOSE
-            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
+            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n");
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP) {
                 amount = 0;
-                run = 0;
+                roundNo = 0;
                 textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Medium Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+                textcolour(0, GRAY, BG_BLACK); printFifoMed(medBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }
@@ -222,7 +232,7 @@ void insertSmall(int amount)
 
     while (amount > 0) {
             #ifdef MP_VERBOSE
-        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Small Buffer ]\trun: %u, to insert: %u units. ", pid, run, amount);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[  Small Buffer ]\trun: %u, to insert: %u units. ", pid, roundNo, amount);
             #endif
         sem_wait(&smallBuffer->mutex);
         bufEmpty = smallBuffer->capacity - smallBuffer->size;
@@ -257,15 +267,24 @@ void insertSmall(int amount)
             sem_post(&smallBuffer->mutex);
             amount = 0;
                 #ifdef MP_VERBOSE
-            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
+            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n");
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP) {
                 amount = 0;
-                run = 0;
-                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Small Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                roundNo = 0;
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[  Small Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+                textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }

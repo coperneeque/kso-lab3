@@ -33,7 +33,7 @@ void initFifoMed(Fifo_med_t *f)
 
     f->capacity = FIFO_MED_CAPACITY;
     f->size     = 0;
-    f->head_idx = 0;  // next empty index - can be outside array boundaries when buffer is full
+    f->head_idx = 0;  // next empty index - will wrap around when buffer is full
     f->tail_idx = -1;  // index of data to be extracted. can be -1 if buffer empty
     f->chunk    = FIFO_MED_CHUNK;
     sem_init(&f->mutex, 1, 1);
@@ -198,10 +198,10 @@ void randFillFifoMed(Fifo_med_t* f)
 
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
-    double bound = (double)percentage / 100 * f->capacity;
+    float bound = (float)percentage / 100 * f->capacity;
         #ifdef MP_V_VERBOSE
     textcolour(0, WHITE, BG_BLACK);
-    printf("randFillFifoMed(): Random filling %u elements\n", (size_t)bound);
+    printf("randFillFifoMed(): Random filling %u elements\n", (int)bound);
     printFifoMed(f);
         #endif
     sem_wait(&f->mutex);

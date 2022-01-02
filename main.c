@@ -31,86 +31,92 @@ int main(int argc, char **argv)
 // create big buffer
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = getBigBuffer(bigBlockId);
-    // randFillFifoBig(bigBuffer);
+        #ifdef DO_PREFILL
+    randFillFifoBig(bigBuffer);
+        #endif
 
 // create medium buffer
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
     Fifo_med_t *medBuffer = getMedBuffer(medBlockId);
+        #ifdef DO_PREFILL
+    randFillFifoMed(medBuffer);
+        #endif
 
 // create small buffer
     int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
     Lifo_small_t *smallBuffer = getSmallBuffer(smallBlockId);
+        #ifdef DO_PREFILL
+    randFillLifoSmall(smallBuffer);
+        #endif
 
     pid_t parentpid = getpid();
     srandom(time(NULL));
 
     if (fork() == 0) {  // parent spawning 1st child:
             #ifdef MP_V_VERBOSE
-        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", NULL)\n", getpid());
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", (char**){NULL})\n", getpid());
             #endif
-        execv("./consumerA", NULL);
+        execv("./consumerA", (char**){NULL});
     }
-    else {  // parent process:
-        if (fork() == 0) {  // parent spawning 2nd child:
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", NULL)\n", getpid());
-                #endif
-            execv("./producerA", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 3rd child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerB\", NULL)\n", getpid());
-                #endif
-            execv("./producerB", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 4th child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerB\", NULL)\n", getpid());
-                #endif
-            execv("./consumerB", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 5th child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerC\", NULL)\n", getpid());
-                #endif
-            execv("./producerC", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 6th child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerC\", NULL)\n", getpid());
-                #endif
-            execv("./consumerC", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 7th child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerRand\", NULL)\n", getpid());
-                #endif
-            execv("./producerRand", NULL);
-        }
-        else if (fork() == 0)  // parent spawning 8th child:
-        {
-                #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerRand\", NULL)\n", getpid());
-                #endif
-            execv("./consumerRand", NULL);
-        }
+    else if (fork() == 0) {// parent spawning 2nd child:
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./producerA", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 3rd child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerB\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./producerB", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 4th child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerB\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./consumerB", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 5th child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerC\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./producerC", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 6th child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerC\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./consumerC", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 7th child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerRand\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./producerRand", (char**){NULL});
+    }
+    else if (fork() == 0)  // parent spawning 8th child:
+    {
+            #ifdef MP_V_VERBOSE
+        textcolour(0, WHITE, BG_BLACK);
+        printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerRand\", (char**){NULL})\n", getpid());
+            #endif
+        execv("./consumerRand", (char**){NULL});
     }
 
     if (getpid() == parentpid) {
         while(wait(NULL) > 0);  // wait for all consumers/producers to finish
-            #ifdef MP_V_VERBOSE
+            // #ifdef MP_V_VERBOSE
         textcolour(0, WHITE, BG_BLACK);
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
@@ -119,7 +125,8 @@ int main(int argc, char **argv)
         printFifoMed(medBuffer);
         printf("Parent:\t\t");
         printLifoSmall(smallBuffer);
-            #endif
+            // #endif
+        // cleanup shared memory
         shmdt(bigBuffer);
         shmdt(medBuffer);
         shmdt(smallBuffer);
@@ -127,10 +134,7 @@ int main(int argc, char **argv)
         shmctl(medBlockId, IPC_RMID, NULL);
         shmctl(smallBlockId, IPC_RMID, NULL);
     }
-    else {  // all children exiting
-        // printf("child pid: %u exiting\n", getpid());
-    }
-    
+
     return 0;
 }
 

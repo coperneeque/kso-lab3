@@ -16,118 +16,103 @@
 
 
 #define NEED_CAP    10
-#define USEC        100000
-#define WAIT_CAP    1000000  // 30s
 
 int main(int argc, char **argv)
 {
-    int run = 40;
+    int roundNo = 0;
     int need;
     int toConsume;
     int pid = getpid();
     long totalWait = 0;
 
-// attach to existing (hopefully]) small buffer
     int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
     Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\tAttached to shared small buffer:\n", pid);
-    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\t", pid);
+    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\tAttached to shared small buffer:\n", pid);
+    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\t", pid);
     textcolour(0, MAGENTA, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
+    sem_wait(&smallBuffer->mutex);
+    roundNo = smallBuffer->capacity * ROUND_MULT;
+    sem_post(&smallBuffer->mutex);
 
-    // srandom(time(NULL));
-
-    while(run)
+    while(roundNo)
     {
-        // run = random() % 30;
-        --run;
-        need = random() % NEED_CAP;  // how much data needed by consumer
+        --roundNo;
+        need = random() % NEED_CAP;
             #ifdef MP_VERBOSE
-        textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\trun: %u, need: %u. \n", pid, run, need);
+        textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\t\t\t\trun: %u, need: %u. \n", pid, roundNo, need);
             #endif
         while (need > 0)
         {
                 #ifdef MP_VERBOSE
-            textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\trun: %u, need: %u. ", pid, run, need);
+            textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\t\t\t\trun: %u, need: %u. ", pid, roundNo, need);
                 #endif
-            sem_wait(&smallBuffer->mutex);  // access the buffer
-            if (smallBuffer->size > 0)  // there is something to consume
+            sem_wait(&smallBuffer->mutex);
+            if (smallBuffer->size > 0)
             {
-                /*
-                 * Data is needed and there is data in the buffer.
-                 * Determine how much can be consumed.
-                 */
-                /*
-                 * Checking borderline conditions:
-                 */
-                if (smallBuffer->size < smallBuffer->chunk)  // Buffer is less than 1 chunk full
+                if (smallBuffer->size < smallBuffer->chunk)
                 {
-                    if (need <= smallBuffer->size)  // Buffer has enough to satisfy the need
+                    if (need <= smallBuffer->size)
                     {
-                        toConsume = need;  // consume all that is needed
-                        need = 0;  // consumer is satisfied
+                        toConsume = need;
+                        need = 0;
                     }
-                    else  // Buffer hasn't got enough
+                    else
                     {
-                        toConsume = smallBuffer->size;  // consume everything from the buffer
-                        need -= toConsume;  // consumer is not fully satisfied
+                        toConsume = smallBuffer->size;
+                        need -= toConsume;
                     }
                 }
-                else  // Buffer is at least 1 chunk full
+                else
                 {
-                    if (need <= smallBuffer->chunk)  // Need can be satisfied from 1 chunk
+                    if (need <= smallBuffer->chunk)
                     {
-                        toConsume = need;  // consume all that is needed
-                        need = 0;  // consumer is satisfied
+                        toConsume = need;
+                        need = 0;
                     }
-                    else  // Need can't be satisfied from 1 chunk
+                    else
                     {
-                        toConsume = smallBuffer->chunk;  // consume everything from 1 chunk
-                        need -= toConsume;  // consumer is not fully satisfied
+                        toConsume = smallBuffer->chunk;
+                        need -= toConsume;
                     }
                 }
-                /*
-                 * Execute the consumption
-                 */
                     #ifdef MP_VERBOSE
                 textcolour(UNDERLINE, MAGENTA, BG_BLACK); printf("Consuming %u units\n", toConsume);
                     #endif
                 for (size_t i = 0; i < toConsume; i++)
                 {
                     sem_wait(&smallBuffer->semFull);
-                    popLifoSmall(smallBuffer);  // consume and discard
+                    popLifoSmall(smallBuffer);
                     sem_post(&smallBuffer->semEmpty);
                 }
-                /*
-                 * Open the mutex after consuming from the buffer.
-                 * Possibly another consumer/producer will consume/produce data
-                 * in the buffer
-                 */
                 sem_post(&smallBuffer->mutex);
             }
-            else  // buffer is empty
+            else
             {
-                sem_post(&smallBuffer->mutex);  // open mutex and wait
+                sem_post(&smallBuffer->mutex);
                     #ifdef MP_VERBOSE
                 textcolour(UNDERLINE, MAGENTA, BG_BLACK); printf("Waiting for %u more units\n", need);
                     #endif
-                // usleep(USEC);
+                    #ifdef DO_WAIT
+                usleep(USEC);
+                    #endif
+                    #ifdef DO_TIMEOUT
                 totalWait += USEC;
                 if (totalWait > WAIT_CAP)
                 {
                     need = 0;
-                    run = 0;
-                    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    roundNo = 0;
+                    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
-                
+                    #endif
             }
         }        
     }
 
+    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\tFinishing:\n", pid);
         #ifdef MP_V_VERBOSE
-    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\tFinishing:\n", pid);
-    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t%u\t", pid);
+    textcolour(0, MAGENTA, BG_BLACK); printf("Consumer C:\t\t%u\t", pid);
     textcolour(0, MAGENTA, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
     shmdt(smallBuffer);

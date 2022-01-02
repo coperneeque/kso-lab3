@@ -18,8 +18,6 @@
 
 
 #define NEED_CAP    10
-#define USEC        100000
-#define WAIT_CAP    1000000  // 1s
 
 
 void consumeBig(int amount);
@@ -31,24 +29,25 @@ Fifo_big_t      *bigBuffer;
 Fifo_med_t      *medBuffer;
 Lifo_small_t    *smallBuffer;
 int             pid;
-int             run = 40;
+int             roundNo = 0;
 long            totalWait = 0;
 
 
 int main(int argc, char **argv)
 {
     int need;
-    int toConsume;
-
     pid = getpid();
 
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
-    Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
+    bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
     textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tAttached to shared big buffer:\n", pid);
     textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t", pid);
     textcolour(0, BRIGHT_WHITE, BG_BLACK); printFifoBig(bigBuffer);
         #endif
+    sem_wait(&bigBuffer->mutex);
+    roundNo = bigBuffer->capacity * ROUND_MULT;
+    sem_post(&bigBuffer->mutex);
     int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
     medBuffer = attachMemBlock(medBlockId);
         #ifdef MP_V_VERBOSE
@@ -64,14 +63,12 @@ int main(int argc, char **argv)
     textcolour(0, BRIGHT_WHITE, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
 
-    // srandom(time(NULL));
-    while(run)
+    while(roundNo)
     {
-        // run = random() % 30;
-        --run;
+        --roundNo;
         need = random() % NEED_CAP;  // how much data needed by consumer
             #ifdef MP_VERBOSE
-        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\trun: %u, need: %u. \n", pid, run, need);
+        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\trun: %u, need: %u. \n", pid, roundNo, need);
             #endif
         switch (random() % 3)  // random select buffer to consume from
         {
@@ -88,11 +85,6 @@ int main(int argc, char **argv)
             break;
         }
     }
-        #ifdef MP_V_VERBOSE
-    textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tFinishing:\n", pid);
-    textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t", pid);
-    textcolour(0, BRIGHT_WHITE, BG_BLACK); printFifoBig(bigBuffer);
-        #endif
     shmdt(smallBuffer);
     shmdt(medBuffer);
     shmdt(bigBuffer);
@@ -106,7 +98,7 @@ void consumeBig(int amount)
     while (amount > 0)
     {
             #ifdef MP_VERBOSE
-        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[ Big Buffer ]\trun: %u, need: %u. ", pid, run, amount);
+        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[   Big Buffer  ]\trun: %u, need: %u. ", pid, roundNo, amount);
             #endif
         sem_wait(&bigBuffer->mutex);
         if (bigBuffer->size > 0)
@@ -155,14 +147,23 @@ void consumeBig(int amount)
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, BRIGHT_WHITE, BG_BLACK); printf("Waiting for %u more units\n", amount);
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP)
             {
                 amount = 0;  // break out of local while()
-                run = 0;  // break out of main while()
-                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tWaiting timed-out - exiting.\n", pid);
+                roundNo = 0;  // break out of main while()
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[   Big Buffer  ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printFifoBig(bigBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }
@@ -173,7 +174,7 @@ void consumeMed(int amount)
     while (amount > 0)
     {
             #ifdef MP_VERBOSE
-        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[ Medium Buffer ]\trun: %u, need: %u. ", pid, run, amount);
+        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[ Medium Buffer ]\trun: %u, need: %u. ", pid, roundNo, amount);
             #endif
         sem_wait(&medBuffer->mutex);
         if (medBuffer->size > 0)
@@ -221,14 +222,23 @@ void consumeMed(int amount)
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, BRIGHT_WHITE, BG_BLACK); printf("Waiting for %u more units\n", amount);
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP)
             {
                 amount = 0;
-                run = 0;
-                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tWaiting timed-out - exiting.\n", pid);
+                roundNo = 0;
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[ Medium Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printFifoMed(medBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }
@@ -239,7 +249,7 @@ void consumeSmall(int amount)
     while (amount > 0)
     {
             #ifdef MP_VERBOSE
-        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[ Small Buffer ]\trun: %u, need: %u. ", pid, run, amount);
+        textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[  Small Buffer ]\trun: %u, need: %u. ", pid, roundNo, amount);
             #endif
         sem_wait(&smallBuffer->mutex);
         if (smallBuffer->size > 0)
@@ -287,14 +297,23 @@ void consumeSmall(int amount)
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, BRIGHT_WHITE, BG_BLACK); printf("Waiting for %u more units\n", amount);
                 #endif
-            // usleep(USEC);
+                #ifdef DO_WAIT
+            usleep(USEC);
+                #endif
+                #ifdef DO_TIMEOUT
             totalWait += USEC;
             if (totalWait > WAIT_CAP)
             {
                 amount = 0;
-                run = 0;
-                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tWaiting timed-out - exiting.\n", pid);
+                roundNo = 0;
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t[  Small Buffer ]\tWaiting timed-out - exiting.\n", pid);
+                    #ifdef MP_V_VERBOSE
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\tFinishing:\n", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printf("Consumer Random:\t%u\t", pid);
+                textcolour(0, BRIGHT_WHITE, BG_BLACK); printLifoSmall(smallBuffer);
+                    #endif
             }
+                #endif
         }
     }
 }

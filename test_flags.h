@@ -4,16 +4,30 @@
  * lab3                                                                 *
  ************************************************************************/
 
-// The following flags can be set
+// The following flags can be set:
+
+// Consumer/producer rounds per buffer capacity multiplier
+// eg. if buffer capacity is 30 then multiplier of 5
+// yields 5*30 rounds of consumption/production
+#define ROUND_MULT 2
+
+// Producer/Consumer wait time after buffer is full/empty:
+// #define DO_WAIT
+#define USEC        10000  // microseconds waiting time
+#define DO_TIMEOUT
+#define WAIT_CAP    1000000  // microseconds total waiting time
 
 // to be verbose
-#define MP_VERBOSE
+// #define MP_VERBOSE
 
 // to be very verbose
-#define MP_V_VERBOSE
+// #define MP_V_VERBOSE
 
 // to print more debug info:
-#define MP_DEBUG
+// #define MP_DEBUG
+
+// to prefill buffers before consumers/producers are spawned:
+// #define DO_PREFILL
 
 // to run test on the bigest buffer FIFO:
 // #define TEST_FIFO_BIG

@@ -1,5 +1,5 @@
 # Makefile
-CFLAGS = -c
+CFLAGS = -Wall -c
 LDFLAGS = -lrt -lpthread
 
 all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o consumerA.o consumerB.o consumerC.o consumerRand.o producerA.o producerB.o producerC.o producerRand.o textcolour.o
