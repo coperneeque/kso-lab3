@@ -92,7 +92,7 @@ int main(int argc, char **argv)
                  * Execute the consumption
                  */
                     #ifdef MP_VERBOSE
-                textcolour(4, YELLOW, BG_BLACK); printf("Consuming %u units\n", toConsume);
+                textcolour(UNDERLINE, YELLOW, BG_BLACK); printf("Consuming %u units\n", toConsume);
                     #endif
                 for (size_t i = 0; i < toConsume; i++)
                 {
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
             {
                 sem_post(&medBuffer->mutex);  // open mutex and wait
                     #ifdef MP_VERBOSE
-                textcolour(4, YELLOW, BG_BLACK); printf("Waiting for %u more units\n", need);
+                textcolour(UNDERLINE, YELLOW, BG_BLACK); printf("Waiting for %u more units\n", need);
                     #endif
                 // usleep(USEC);
                 totalWait += USEC;

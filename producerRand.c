@@ -28,40 +28,43 @@ void insertMed();
 void insertSmall(int amount);
 
 
+Fifo_big_t *bigBuffer;
+Fifo_med_t *medBuffer;
+Lifo_small_t *smallBuffer;
 int products[PROD_CAP];
 int pid;
+int run = 40;
+long totalWait = 0;
 
 
 int main(int argc, char **argv)
 {
     int produced;
-    int run = 40;
     int toInsert;
-    long totalWait = 0;
 
     pid = getpid();
 
 // attach to existing buffers
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
-    Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
+    bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+    textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
+        #endif
+    int medBlockId = getMemBlock(SHMEM_FILE, 1, sizeof(Fifo_med_t));
+    Fifo_med_t *medBuffer = attachMemBlock(medBlockId);
+        #ifdef MP_V_VERBOSE
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tAttached to shared medium buffer:\n", pid);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+    textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
     int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
-    Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
+    smallBuffer = attachMemBlock(smallBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
-        #endif
-    int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
-    Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
-        #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tAttached to shared small buffer:\n", pid);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+    textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
 
     // srandom(time(NULL));
@@ -75,14 +78,14 @@ int main(int argc, char **argv)
         }
         
             #ifdef MP_VERBOSE
-        textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
             #endif
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tFinishing:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
+    textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
+    textcolour(0, GRAY, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
     shmdt(smallBuffer);
 
@@ -102,10 +105,11 @@ void insertMed()
 void insertSmall(int amount)
 {
     int bufEmpty;
+    int toInsert;
 
     while (amount > 0) {
             #ifdef MP_VERBOSE
-        textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, to insert: %u units. ", pid, run, amount);
+        textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\trun: %u, to insert: %u units. ", pid, run, amount);
             #endif
         sem_wait(&smallBuffer->mutex);  // access the buffer
         bufEmpty = smallBuffer->capacity - smallBuffer->size;
@@ -138,7 +142,7 @@ void insertSmall(int amount)
                 * Execute the insertion:
                 */
                 #ifdef MP_VERBOSE
-            textcolour(1, CYAN, BLACK); printf("Inserting %u units\n", toInsert);
+            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("Inserting %u units\n", toInsert);
                 #endif
             for (size_t i = 0; i < toInsert; i++) {
                 sem_wait(&smallBuffer->semEmpty);
@@ -159,14 +163,14 @@ void insertSmall(int amount)
                 */
             amount = 0;
                 #ifdef MP_VERBOSE
-            textcolour(1, CYAN, BLACK); printf("No space in buffer - dropping data.\n", pid);
+            textcolour(UNDERLINE, GRAY, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
                 #endif
             // usleep(USEC);
             totalWait += USEC;
             if (totalWait > WAIT_CAP) {
                 amount = 0;
                 run = 0;
-                textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tWaiting timed-out - exiting.\n", pid);
+                textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tWaiting timed-out - exiting.\n", pid);
             }
         }
     }        

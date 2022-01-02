@@ -88,7 +88,7 @@ int main(int argc, char **argv)
                  * Execute the insertion:
                  */
                     #ifdef MP_VERBOSE
-                textcolour(4, CYAN, BG_BLACK); printf("Inserting %u units\n", toInsert);
+                textcolour(UNDERLINE, CYAN, BG_BLACK); printf("Inserting %u units\n", toInsert);
                     #endif
                 for (size_t i = 0; i < toInsert; i++) {
                     sem_wait(&smallBuffer->semEmpty);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
                  */
                 produced = 0;
                     #ifdef MP_VERBOSE
-                textcolour(4, CYAN, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
+                textcolour(UNDERLINE, CYAN, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
                     #endif
                 // usleep(USEC);
                 totalWait += USEC;
