@@ -127,6 +127,7 @@ int main(int argc, char **argv)
     textcolour(0, BLUE, BG_BLACK); printf("Producer B:\t%u\t", pid);
     textcolour(0, BLUE, BG_BLACK); printFifoMed(medBuffer);
         #endif
+    shmdt(medBuffer);
 
     return 0;
 }

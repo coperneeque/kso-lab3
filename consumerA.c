@@ -131,6 +131,7 @@ int main(int argc, char **argv)
     textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\t", pid);
     textcolour(0, RED, BG_BLACK); printFifoBig(bigBuffer);
         #endif
+    shmdt(bigBuffer);
 
     return 0;
 }

@@ -127,6 +127,7 @@ int main(int argc, char **argv)
     textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\t", pid);
     textcolour(0, CYAN, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
+    shmdt(smallBuffer);
 
     return 0;
 }

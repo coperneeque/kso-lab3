@@ -131,6 +131,7 @@ int main(int argc, char **argv)
     textcolour(0, YELLOW, BG_BLACK); printf("Consumer B:\t%u\t", pid);
     textcolour(0, YELLOW, BG_BLACK); printFifoMed(medBuffer);
         #endif
+    shmdt(medBuffer);
 
     return 0;
 }

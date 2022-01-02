@@ -45,7 +45,6 @@ int main(int argc, char **argv)
     srandom(time(NULL));
 
     if (fork() == 0) {  // parent spawning 1st child:
-        // this is child process:
             #ifdef MP_V_VERBOSE
         printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerA\", NULL)\n", getpid());
             #endif
@@ -53,7 +52,6 @@ int main(int argc, char **argv)
     }
     else {  // parent process:
         if (fork() == 0) {  // parent spawning 2nd child:
-            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", NULL)\n", getpid());
@@ -62,7 +60,6 @@ int main(int argc, char **argv)
         }
         else if (fork() == 0)  // parent spawning 3rd child:
         {
-            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerB\", NULL)\n", getpid());
@@ -71,16 +68,14 @@ int main(int argc, char **argv)
         }
         else if (fork() == 0)  // parent spawning 4th child:
         {
-            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerB\", NULL)\n", getpid());
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerB\", NULL)\n", getpid());
                 #endif
             execv("./consumerB", NULL);
         }
         else if (fork() == 0)  // parent spawning 5th child:
         {
-            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerC\", NULL)\n", getpid());
@@ -89,12 +84,19 @@ int main(int argc, char **argv)
         }
         else if (fork() == 0)  // parent spawning 6th child:
         {
-            // this is child process:
                 #ifdef MP_V_VERBOSE
             textcolour(0, WHITE, BG_BLACK);
-            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerC\", NULL)\n", getpid());
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerC\", NULL)\n", getpid());
                 #endif
             execv("./consumerC", NULL);
+        }
+        else if (fork() == 0)  // parent spawning 7th child:
+        {
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BG_BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerRand\", NULL)\n", getpid());
+                #endif
+            execv("./producerRand", NULL);
         }
     }
 
@@ -133,8 +135,6 @@ Fifo_big_t *getBigBuffer(int id)
 #ifndef TEST_FIFO_BIG
     initFifoBig(buf);
 #endif
-    // printf("bigBuffer before fork(): capacity: %u, size: %u\n", bigBuffer->capacity, bigBuffer->size);
-
     return buf;
 }
 
@@ -147,7 +147,6 @@ Fifo_med_t *getMedBuffer(int id)
 #ifndef TEST_FIFO_MED
     initFifoMed(buf);
 #endif
-    // printf("medBuffer before fork(): capacity: %u, size: %u\n", medBuffer->capacity, medBuffer->size);
     return buf;
 }
 

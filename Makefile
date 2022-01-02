@@ -6,10 +6,11 @@ all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_m
 	gcc $(LDFLAGS) main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o textcolour.o -o main
 	gcc $(LDFLAGS) consumerA.o fifo_big.o shared_mem.o textcolour.o -o consumerA
 	gcc $(LDFLAGS) consumerB.o fifo_med.o shared_mem.o textcolour.o -o consumerB
-	gcc $(LDFLAGS) consumerC.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o consumerC
-	gcc $(LDFLAGS) producerA.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerA
-	gcc $(LDFLAGS) producerB.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerB
-	gcc $(LDFLAGS) producerC.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerC
+	gcc $(LDFLAGS) consumerC.o lifo_small.o shared_mem.o textcolour.o -o consumerC
+	gcc $(LDFLAGS) producerA.o fifo_big.o shared_mem.o textcolour.o -o producerA
+	gcc $(LDFLAGS) producerB.o fifo_med.o shared_mem.o textcolour.o -o producerB
+	gcc $(LDFLAGS) producerC.o lifo_small.o shared_mem.o textcolour.o -o producerC
+	gcc $(LDFLAGS) producerRand.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerRand
 
 main.o: main.c fifo_big.h fifo_med.h lifo_small.h simple_test.h test_flags.h textcolour.h
 	gcc $(CFLAGS) main.c
