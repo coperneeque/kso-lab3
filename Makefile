@@ -2,7 +2,7 @@
 CFLAGS = -c
 LDFLAGS = -lrt -lpthread
 
-all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o consumerA.o consumerB.o consumerC.o producerA.o producerB.o producerC.o textcolour.o
+all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o consumerA.o consumerB.o consumerC.o consumerRand.o producerA.o producerB.o producerC.o producerRand.o textcolour.o
 	gcc $(LDFLAGS) main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o textcolour.o -o main
 	gcc $(LDFLAGS) consumerA.o fifo_big.o shared_mem.o textcolour.o -o consumerA
 	gcc $(LDFLAGS) consumerB.o fifo_med.o shared_mem.o textcolour.o -o consumerB
@@ -11,6 +11,7 @@ all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_m
 	gcc $(LDFLAGS) producerB.o fifo_med.o shared_mem.o textcolour.o -o producerB
 	gcc $(LDFLAGS) producerC.o lifo_small.o shared_mem.o textcolour.o -o producerC
 	gcc $(LDFLAGS) producerRand.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerRand
+	gcc $(LDFLAGS) consumerRand.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o consumerRand
 
 main.o: main.c fifo_big.h fifo_med.h lifo_small.h simple_test.h test_flags.h textcolour.h
 	gcc $(CFLAGS) main.c
@@ -36,6 +37,9 @@ consumerB.o: consumerB.c shared_mem.h fifo_med.h textcolour.h test_flags.h
 consumerC.o: consumerC.c shared_mem.h lifo_small.h textcolour.h test_flags.h
 	gcc $(CFLAGS) consumerC.c
 
+consumerRand.o: consumerRand.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h test_flags.h
+	gcc $(CFLAGS) consumerRand.c
+
 producerA.o: producerA.c shared_mem.h fifo_big.h textcolour.h test_flags.h
 	gcc $(CFLAGS) producerA.c
 
@@ -57,5 +61,5 @@ simple_test.o: simple_test.h simple_test.c fifo_big.h fifo_med.h lifo_small.h
 test_flags: test_flags.h
 
 clean:
-	rm -f *.o main consumer? producer? producerRand
+	rm -f *.o main consumer? producer? producerRand consumerRand
 

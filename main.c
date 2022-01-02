@@ -98,6 +98,14 @@ int main(int argc, char **argv)
                 #endif
             execv("./producerRand", NULL);
         }
+        else if (fork() == 0)  // parent spawning 8th child:
+        {
+                #ifdef MP_V_VERBOSE
+            textcolour(0, WHITE, BG_BLACK);
+            printf("Child:\t\tParent executed fork(), child pid: %u. Executing consumer process - execv(\"./consumerRand\", NULL)\n", getpid());
+                #endif
+            execv("./consumerRand", NULL);
+        }
     }
 
     if (getpid() == parentpid) {
