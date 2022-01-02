@@ -78,8 +78,7 @@ int main(int argc, char **argv)
             #ifdef MP_VERBOSE
         textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
             #endif
-        // int b = random() % 3;
-        switch (random() % 3)
+        switch (random() % 3)  // random select buffer to insert into
         {
         case 0:
             insertBig(produced);
@@ -94,7 +93,6 @@ int main(int argc, char **argv)
             break;
         }
     }
-
         #ifdef MP_V_VERBOSE
     textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\tFinishing:\n", pid);
     textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t", pid);
@@ -136,7 +134,6 @@ void insertBig(int amount)
                     amount -= toInsert;
                 }
             }
-
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, GRAY, BG_BLACK); printf("Inserting %u units\n", toInsert);
                 #endif
@@ -155,8 +152,8 @@ void insertBig(int amount)
             // usleep(USEC);
             totalWait += USEC;
             if (totalWait > WAIT_CAP) {
-                amount = 0;
-                run = 0;
+                amount = 0;  // break out of local while()
+                run = 0;  // break out of main while()
                 textcolour(0, GRAY, BG_BLACK); printf("Producer Random:\t%u\t[ Big Buffer ]\tWaiting timed-out - exiting.\n", pid);
             }
         }
@@ -175,7 +172,7 @@ void insertMed(int amount)
         sem_wait(&medBuffer->mutex);
         bufEmpty = medBuffer->capacity - medBuffer->size;
         if (bufEmpty > 0) {
-            if (bufEmpty < medBuffer->chunk) {  // buffer is less than 1 chunk empty
+            if (bufEmpty < medBuffer->chunk) {
                 if (amount <= bufEmpty) {
                     toInsert = amount;
                     amount = 0;
@@ -183,16 +180,15 @@ void insertMed(int amount)
                     toInsert = bufEmpty;
                     amount -= toInsert;
                 }
-            } else {  // buffer is at least 1 chunk empty
+            } else {
                 if (amount <= medBuffer->chunk) {
                     toInsert = amount;
                     amount = 0;
-                } else {  // produced data will not fit in 1 chunk
+                } else {
                     toInsert = medBuffer->chunk;
                     amount -= toInsert;
                 }
             }
-
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, GRAY, BG_BLACK); printf("Inserting %u units\n", toInsert);
                 #endif
@@ -202,7 +198,7 @@ void insertMed(int amount)
                 sem_post(&medBuffer->semFull);
             }
             sem_post(&medBuffer->mutex);
-        } else {  // no space in the buffer
+        } else {
             sem_post(&medBuffer->mutex);
             amount = 0;
                 #ifdef MP_VERBOSE
@@ -231,7 +227,7 @@ void insertSmall(int amount)
         sem_wait(&smallBuffer->mutex);
         bufEmpty = smallBuffer->capacity - smallBuffer->size;
         if (bufEmpty > 0) {
-            if (bufEmpty < smallBuffer->chunk) {  // buffer is less than 1 chunk empty
+            if (bufEmpty < smallBuffer->chunk) {
                 if (amount <= bufEmpty) {
                     toInsert = amount;
                     amount = 0;
@@ -239,16 +235,15 @@ void insertSmall(int amount)
                     toInsert = bufEmpty;
                     amount -= toInsert;
                 }
-            } else {  // buffer is at least 1 chunk empty
+            } else {
                 if (amount <= smallBuffer->chunk) {
                     toInsert = amount;
                     amount = 0;
-                } else {  // produced data will not fit in 1 chunk
+                } else {
                     toInsert = smallBuffer->chunk;
                     amount -= toInsert;
                 }
             }
-
                 #ifdef MP_VERBOSE
             textcolour(UNDERLINE, GRAY, BG_BLACK); printf("Inserting %u units\n", toInsert);
                 #endif
@@ -258,7 +253,7 @@ void insertSmall(int amount)
                 sem_post(&smallBuffer->semFull);
             }
             sem_post(&smallBuffer->mutex);
-        } else {  // no space in the buffer
+        } else {
             sem_post(&smallBuffer->mutex);
             amount = 0;
                 #ifdef MP_VERBOSE
