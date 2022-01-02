@@ -32,9 +32,9 @@ int main(int argc, char **argv)
     int bigBlockId = getMemBlock(SHMEM_FILE, 0, sizeof(Fifo_big_t));
     Fifo_big_t *bigBuffer = attachMemBlock(bigBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tAttached to shared big buffer:\n", pid);
-    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\t", pid);
-    textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tAttached to shared big buffer:\n", pid);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\t", pid);
+    textcolour(0, RED, BG_BLACK); printFifoBig(bigBuffer);
         #endif
 
     // srandom(time(NULL));
@@ -45,12 +45,12 @@ int main(int argc, char **argv)
         --run;
         need = random() % NEED_CAP;  // how much data needed by consumer
             #ifdef MP_VERBOSE
-        textcolour(0, RED, BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. \n", pid, run, need);
+        textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. \n", pid, run, need);
             #endif
         while (need > 0)
         {
                 #ifdef MP_VERBOSE
-            textcolour(0, RED, BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. ", pid, run, need);
+            textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\trun: %u, need: %u. ", pid, run, need);
                 #endif
             sem_wait(&bigBuffer->mutex);  // access the buffer
             if (bigBuffer->size > 0)  // there is something to consume
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
                  * Execute the consumption
                  */
                     #ifdef MP_VERBOSE
-                textcolour(1, RED, BLACK); printf("Consuming %u units\n", toConsume);
+                textcolour(4, RED, BG_BLACK); printf("Consuming %u units\n", toConsume);
                     #endif
                 for (size_t i = 0; i < toConsume; i++)
                 {
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
             {
                 sem_post(&bigBuffer->mutex);  // open mutex and wait
                     #ifdef MP_VERBOSE
-                textcolour(1, RED, BLACK); printf("Waiting for %u more units\n", need);
+                textcolour(4, RED, BG_BLACK); printf("Waiting for %u more units\n", need);
                     #endif
                 // usleep(USEC);
                 totalWait += USEC;
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
                 {
                     need = 0;
                     run = 0;
-                    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
                 
             }
@@ -127,9 +127,9 @@ int main(int argc, char **argv)
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\tFinishing:\n", pid);
-    textcolour(0, RED, BLACK); printf("Consumer A:\t%u\t", pid);
-    textcolour(0, RED, BLACK); printFifoBig(bigBuffer);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\tFinishing:\n", pid);
+    textcolour(0, RED, BG_BLACK); printf("Consumer A:\t%u\t", pid);
+    textcolour(0, RED, BG_BLACK); printFifoBig(bigBuffer);
         #endif
 
     return 0;

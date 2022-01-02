@@ -10,14 +10,15 @@
 #define REVERSE		7
 #define HIDDEN		8
 
-#define BLACK 		0
-#define RED		    1
-#define GREEN		2
-#define YELLOW		3
-#define BLUE		4
-#define MAGENTA		5
-#define CYAN		6
-#define	WHITE		7
+#define BG_BLACK    40
+#define BLACK 		30
+#define RED		    31
+#define GREEN		32
+#define YELLOW		33
+#define BLUE		34
+#define MAGENTA		35
+#define CYAN		36
+#define	WHITE		37
 
 void textcolour(int attr, int fg, int bg);
 

@@ -66,7 +66,7 @@ void putLifoSmall(Lifo_small_t *l, int k)
     ++l->head_idx;
     ++l->size;
         #ifdef MP_DEBUG
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("putLifoSmall(): head_idx: %u, k: %d, size: %u\n", l->head_idx, k, l->size);
         #endif
 }
@@ -98,7 +98,7 @@ int popLifoSmall(Lifo_small_t* l)
     int ret = l->data[l->head_idx];
     --l->size;
         #ifdef MP_DEBUG
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("popLifoSmall(): head_idx: %u, ret: %d, size: %u\n", l->head_idx, ret, l->size);
         #endif
 
@@ -122,7 +122,7 @@ void printLifoSmall(Lifo_small_t* l)
     sem_getvalue(&l->semEmpty, &sev);
     sem_getvalue(&l->semFull, &sfv);
     // sem_wait(&f->mutex);
-    // textcolour(0, WHITE, BLACK);
+    // textcolour(0, WHITE, BG_BLACK);
     printf("Small LIFO buffer. Capacity: %u, size: %u, head_idx: %u, semEmpty: %u, semFull: %u\n", l->capacity, l->size, l->head_idx, sev, sfv);
     // sem_post(&f->mutex);
 }
@@ -174,7 +174,7 @@ void randFillLifoSmall(Lifo_small_t* l)
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * l->capacity;
         #ifdef MP_V_VERBOSE
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("randFillLifoSmall(): Random filling %u elements\n", (size_t)bound);
     printLifoSmall(l);
         #endif

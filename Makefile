@@ -4,8 +4,8 @@ LDFLAGS = -lrt -lpthread
 
 all: test_flags main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o consumerA.o consumerB.o consumerC.o producerA.o producerB.o producerC.o textcolour.o
 	gcc $(LDFLAGS) main.o fifo_big.o fifo_med.o lifo_small.o simple_test.o shared_mem.o textcolour.o -o main
-	gcc $(LDFLAGS) consumerA.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o consumerA
-	gcc $(LDFLAGS) consumerB.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o consumerB
+	gcc $(LDFLAGS) consumerA.o fifo_big.o shared_mem.o textcolour.o -o consumerA
+	gcc $(LDFLAGS) consumerB.o fifo_med.o shared_mem.o textcolour.o -o consumerB
 	gcc $(LDFLAGS) consumerC.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o consumerC
 	gcc $(LDFLAGS) producerA.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerA
 	gcc $(LDFLAGS) producerB.o fifo_big.o fifo_med.o lifo_small.o shared_mem.o textcolour.o -o producerB
@@ -26,23 +26,26 @@ lifo_small.o: lifo_small.h lifo_small.c simple_test.h test_flags.h
 shared_mem.o: shared_mem.h shared_mem.c test_flags.h
 	gcc $(CFLAGS) shared_mem.c
 
-consumerA.o: consumerA.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+consumerA.o: consumerA.c shared_mem.h fifo_big.h textcolour.h test_flags.h
 	gcc $(CFLAGS) consumerA.c
 
-consumerB.o: consumerB.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+consumerB.o: consumerB.c shared_mem.h fifo_med.h textcolour.h test_flags.h
 	gcc $(CFLAGS) consumerB.c
 
-consumerC.o: consumerC.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+consumerC.o: consumerC.c shared_mem.h lifo_small.h textcolour.h test_flags.h
 	gcc $(CFLAGS) consumerC.c
 
-producerA.o: producerA.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+producerA.o: producerA.c shared_mem.h fifo_big.h textcolour.h test_flags.h
 	gcc $(CFLAGS) producerA.c
 
-producerB.o: producerB.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+producerB.o: producerB.c shared_mem.h fifo_med.h textcolour.h test_flags.h
 	gcc $(CFLAGS) producerB.c
 
-producerC.o: producerC.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h
+producerC.o: producerC.c shared_mem.h lifo_small.h textcolour.h test_flags.h
 	gcc $(CFLAGS) producerC.c
+
+producerRand.o: producerRand.c shared_mem.h fifo_big.h fifo_med.h lifo_small.h textcolour.h test_flags.h
+	gcc $(CFLAGS) producerRand.c
 
 textcolour.o: textcolour.h textcolour.c
 	gcc $(CFLAGS) textcolour.c
@@ -53,5 +56,5 @@ simple_test.o: simple_test.h simple_test.c fifo_big.h fifo_med.h lifo_small.h
 test_flags: test_flags.h
 
 clean:
-	rm -f *.o main consumer? producer?
+	rm -f *.o main consumer? producer? producerRand
 

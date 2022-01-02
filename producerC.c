@@ -35,9 +35,9 @@ int main(int argc, char **argv)
     int smallBlockId = getMemBlock(SHMEM_FILE, 2, sizeof(Lifo_small_t));
     Lifo_small_t *smallBuffer = attachMemBlock(smallBlockId);
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
+    textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\tAttached to shared small buffer:\n", pid);
+    textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\t", pid);
+    textcolour(0, CYAN, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
 
     // srandom(time(NULL));
@@ -51,11 +51,11 @@ int main(int argc, char **argv)
         }
         
             #ifdef MP_VERBOSE
-        textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
+        textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\trun: %u, produced: %u units\n", pid, run, produced);
             #endif
         while (produced > 0) {
                 #ifdef MP_VERBOSE
-            textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
+            textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\trun: %u, to insert: %u units. ", pid, run, produced);
                 #endif
             sem_wait(&smallBuffer->mutex);  // access the buffer
             bufEmpty = smallBuffer->capacity - smallBuffer->size;
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
                  * Execute the insertion:
                  */
                     #ifdef MP_VERBOSE
-                textcolour(1, CYAN, BLACK); printf("Inserting %u units\n", toInsert);
+                textcolour(4, CYAN, BG_BLACK); printf("Inserting %u units\n", toInsert);
                     #endif
                 for (size_t i = 0; i < toInsert; i++) {
                     sem_wait(&smallBuffer->semEmpty);
@@ -109,23 +109,23 @@ int main(int argc, char **argv)
                  */
                 produced = 0;
                     #ifdef MP_VERBOSE
-                textcolour(1, CYAN, BLACK); printf("No space in buffer - dropping data.\n", pid);
+                textcolour(4, CYAN, BG_BLACK); printf("No space in buffer - dropping data.\n", pid);
                     #endif
                 // usleep(USEC);
                 totalWait += USEC;
                 if (totalWait > WAIT_CAP) {
                     produced = 0;
                     run = 0;
-                    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tWaiting timed-out - exiting.\n", pid);
+                    textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\tWaiting timed-out - exiting.\n", pid);
                 }
             } 
         }        
     }
 
         #ifdef MP_V_VERBOSE
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\tFinishing:\n", pid);
-    textcolour(0, CYAN, BLACK); printf("Producer C:\t%u\t", pid);
-    textcolour(0, CYAN, BLACK); printLifoSmall(smallBuffer);
+    textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\tFinishing:\n", pid);
+    textcolour(0, CYAN, BG_BLACK); printf("Producer C:\t%u\t", pid);
+    textcolour(0, CYAN, BG_BLACK); printLifoSmall(smallBuffer);
         #endif
 
     return 0;

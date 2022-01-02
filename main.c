@@ -55,7 +55,7 @@ int main(int argc, char **argv)
         if (fork() == 0) {  // parent spawning 2nd child:
             // this is child process:
                 #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BLACK);
+            textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerA\", NULL)\n", getpid());
                 #endif
             execv("./producerA", NULL);
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         {
             // this is child process:
                 #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BLACK);
+            textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerB\", NULL)\n", getpid());
                 #endif
             execv("./producerB", NULL);
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         {
             // this is child process:
                 #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BLACK);
+            textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerB\", NULL)\n", getpid());
                 #endif
             execv("./consumerB", NULL);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         {
             // this is child process:
                 #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BLACK);
+            textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./producerC\", NULL)\n", getpid());
                 #endif
             execv("./producerC", NULL);
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
         {
             // this is child process:
                 #ifdef MP_V_VERBOSE
-            textcolour(0, WHITE, BLACK);
+            textcolour(0, WHITE, BG_BLACK);
             printf("Child:\t\tParent executed fork(), child pid: %u. Executing producer process - execv(\"./consumerC\", NULL)\n", getpid());
                 #endif
             execv("./consumerC", NULL);
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     if (getpid() == parentpid) {
         while(wait(NULL) > 0);  // wait for all consumers/producers to finish
             #ifdef MP_V_VERBOSE
-        textcolour(0, WHITE, BLACK);
+        textcolour(0, WHITE, BG_BLACK);
         printf("Parent:\t\tExiting:\n");
         printf("Parent:\t\t");
         printFifoBig(bigBuffer);

@@ -69,7 +69,7 @@ void putFifoBig(Fifo_big_t *f, int k)
         ++(f->size);
         f->head_idx = (f->head_idx + 1 == f->capacity ? 0 : f->head_idx + 1);  // head_idx = head_idx+1 mod 100
             #ifdef MP_V_VERBOSE
-        textcolour(0, WHITE, BLACK);
+        textcolour(0, WHITE, BG_BLACK);
         printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);        
             #endif
         return;
@@ -80,7 +80,7 @@ void putFifoBig(Fifo_big_t *f, int k)
     f->data[f->head_idx] = k;
     ++(f->size);
         #ifdef MP_V_VERBOSE
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("putFifoBig(): head_idx: %u, k: %d, size: %u\n", f->head_idx, k, f->size);
         #endif
 }
@@ -113,7 +113,7 @@ int popFifoBig(Fifo_big_t* f)
         int ret = f->data[f->tail_idx];
         f->tail_idx = (f->tail_idx + 1 == f->capacity ? 0 : f->tail_idx + 1);  // tail_idx = tail_idx+1 mod 10
             #ifdef MP_V_VERBOSE
-        textcolour(0, WHITE, BLACK);
+        textcolour(0, WHITE, BG_BLACK);
         printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
             #endif
         return ret;
@@ -123,7 +123,7 @@ int popFifoBig(Fifo_big_t* f)
     int ret = f->data[f->tail_idx];
     --f->size;
         #ifdef MP_V_VERBOSE
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("popFifoBig(): tail_idx: %d, ret: %d, size: %u\n", f->tail_idx, ret, f->size);
         #endif
 
@@ -147,7 +147,7 @@ void printFifoBig(Fifo_big_t* f)
     sem_getvalue(&f->semEmpty, &sev);
     sem_getvalue(&f->semFull, &sfv);
     // sem_wait(&f->mutex);
-    // textcolour(0, WHITE, BLACK);
+    // textcolour(0, WHITE, BG_BLACK);
     printf("Big FIFO buffer. Capacity: %u, size: %u, tail_idx: %d, head_idx: %u, semEmpty: %u, semFull: %u\n", f->capacity, f->size, f->tail_idx, f->head_idx, sev, sfv);
     // sem_post(&f->mutex);
 }
@@ -200,7 +200,7 @@ void randFillFifoBig(Fifo_big_t* f)
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     double bound = (double)percentage / 100 * f->capacity;
         #ifdef MP_V_VERBOSE
-    textcolour(0, WHITE, BLACK);
+    textcolour(0, WHITE, BG_BLACK);
     printf("randFillFifoBig(): Random filling %u elements\n", (size_t)bound);
     printFifoBig(f);
         #endif
