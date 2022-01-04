@@ -175,7 +175,7 @@ void randFillLifoSmall(Lifo_small_t* l)
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     float bound = (float)percentage / 100 * l->capacity;
-        #ifdef MP_V_VERBOSE
+        #ifdef MP_DEBUG
     textcolour(0, WHITE, BG_BLACK);
     printf("randFillLifoSmall(): Random filling %u elements\n", (int)bound);
     printLifoSmall(l);
@@ -187,4 +187,5 @@ void randFillLifoSmall(Lifo_small_t* l)
         putLifoSmall(l, random() % RANGE);
         sem_post(&l->semFull);
     }
+    sem_post(&l->mutex);
 }

@@ -199,7 +199,7 @@ void randFillFifoMed(Fifo_med_t* f)
     srandom(time(NULL));
     unsigned percentage = LOWER + random() % (UPPER - LOWER);
     float bound = (float)percentage / 100 * f->capacity;
-        #ifdef MP_V_VERBOSE
+        #ifdef MP_DEBUG
     textcolour(0, WHITE, BG_BLACK);
     printf("randFillFifoMed(): Random filling %u elements\n", (int)bound);
     printFifoMed(f);
